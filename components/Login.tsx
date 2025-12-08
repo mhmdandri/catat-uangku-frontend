@@ -1,20 +1,57 @@
 "use client";
 import React, { useState } from "react";
-import { ArrowLeft, Eye, EyeOff, Lock, Mail, Wallet } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Lock, Mail, User, Wallet } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  AuthLoginRequest,
+  AuthRegisterRequest,
+  AuthResponse,
+} from "@/lib/types";
+import { api, post } from "@/lib/axios";
+import { useLoadingStore } from "@/store/useLoadingStore";
 
 const Login = () => {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
+  const { isLoading, startLoading, stopLoading } = useLoadingStore();
+  const [formData, setFormData] = useState<AuthRegisterRequest>({
     email: "",
     password: "",
-    username: "",
+    name: "",
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    startLoading();
+    try {
+      if (isLogin) {
+        const payload: AuthLoginRequest = {
+          email: formData.email,
+          password: formData.password,
+        };
+        const res = await post<AuthResponse, AuthLoginRequest>(
+          "/auth/login",
+          payload,
+        );
+        api.defaults.headers.common.Authorization = `Bearer ${res.access_token}`;
+        router.push("/dashboard");
+      } else {
+        const payload: AuthRegisterRequest = { ...formData };
+        await post<AuthResponse, AuthRegisterRequest>(
+          "/auth/register",
+          payload,
+        );
+        setIsLogin(true);
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      alert("Terjadi kesalahan. Silakan coba lagi.");
+    } finally {
+      stopLoading();
+    }
   };
 
   return (
@@ -56,16 +93,19 @@ const Login = () => {
                 <label className="mb-2 block text-sm text-gray-700 dark:text-zinc-200">
                   Username
                 </label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-4 py-3 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
-                  placeholder="Masukkan username"
-                  required
-                />
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 pl-10 pr-4 py-3 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                    placeholder="Masukkan username"
+                    required
+                  />
+                </div>
               </div>
             )}
 
@@ -164,9 +204,16 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full rounded-lg bg-emerald-600 py-3 text-white transition hover:bg-emerald-700"
+              disabled={isLoading}
+              className="w-full rounded-lg bg-emerald-600 py-3 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isLogin ? "Masuk" : "Daftar"}
+              {isLoading
+                ? isLogin
+                  ? "Memproses..."
+                  : "Mendaftar..."
+                : isLogin
+                  ? "Masuk"
+                  : "Daftar"}
             </button>
           </form>
 
