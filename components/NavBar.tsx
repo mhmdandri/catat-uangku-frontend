@@ -110,13 +110,16 @@ const NavBar = () => {
           </button>
 
           <Link
-            href="/auth/login"
+            href="/auth?sign=login"
             className="cursor-pointer bg-transparent hover:bg-transparent hover:text-emerald-600 sm:inline-flex rounded-full px-4 text-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-900"
           >
             Masuk
           </Link>
 
-          <Button className="rounded-full bg-emerald-600 px-5 text-white hover:bg-emerald-700">
+          <Button
+            onClick={() => (window.location.href = "#download")}
+            className="rounded-full bg-emerald-600 px-5 text-white hover:bg-emerald-700"
+          >
             Mulai Sekarang
           </Button>
         </div>

@@ -38,7 +38,7 @@ const Hero = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col gap-4 sm:flex-row">
             <Link
-              href="/auth/login"
+              href="/auth?sign=register"
               className="flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-4 text-white transition hover:bg-emerald-700"
             >
               Mulai Sekarang

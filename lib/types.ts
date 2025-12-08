@@ -12,9 +12,20 @@ export type AuthRegisterRequest = {
 
 export type AuthResponse = {
   access_token: string;
-  data: {
-    id: string;
-    name: string;
-    email: string;
-  };
+};
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  group_members: GroupMember[];
+};
+
+export type GroupMember = {
+  id: string;
+  user_id: string;
+  group_id: string;
+  role: "admin" | "member";
+  joined_at: string;
+  is_active: boolean;
 };

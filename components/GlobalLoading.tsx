@@ -21,7 +21,7 @@ export function GlobalLoadingOverlay() {
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center ">
       <Spinner className="size-8" />
     </div>
   );
