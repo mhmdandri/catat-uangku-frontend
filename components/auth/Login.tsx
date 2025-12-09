@@ -6,7 +6,7 @@ import {
   AuthRegisterRequest,
   AuthResponse,
 } from "@/lib/types";
-import { api, post } from "@/lib/axios";
+import { post, setAccessToken } from "@/lib/axios";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import DialogRegister from "../DialogRegister";
 import DialogForgetPwd from "../DialogForgetPwd";
@@ -33,6 +33,7 @@ const Login = () => {
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [showForgetPassword, setShowForgetPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [remember, setRemember] = useState(false);
   const [formData, setFormData] = useState<AuthRegisterRequest>({
     email: "",
     password: "",
@@ -57,12 +58,13 @@ const Login = () => {
         const payload: AuthLoginRequest = {
           email: formData.email,
           password: formData.password,
+          remember_me: remember,
         };
         const res = await post<AuthResponse, AuthLoginRequest>(
           "/auth/login",
           payload
         );
-        api.defaults.headers.common.Authorization = `Bearer ${res.access_token}`;
+        setAccessToken(res.access_token);
         router.push("/dashboard");
       } else {
         const payload: AuthRegisterRequest = { ...formData };
@@ -123,9 +125,11 @@ const Login = () => {
               onSubmit={handleSubmit}
               onForgotPassword={() => setShowForgetPassword(true)}
               errorMessage={errorMessage}
+              remember={remember}
+              setRemember={setRemember}
             />
             <SectionDivider />
-            <SocialLoginButtons />
+            <SocialLoginButtons remember={remember} />
             <AuthToggle
               isLogin={isLogin}
               onToggle={() => setMode(isLogin ? "register" : "login")}

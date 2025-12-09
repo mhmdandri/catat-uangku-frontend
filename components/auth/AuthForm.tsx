@@ -13,6 +13,8 @@ interface AuthFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onForgotPassword: () => void;
   errorMessage?: string;
+  remember: boolean;
+  setRemember: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({
@@ -25,6 +27,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
   onSubmit,
   onForgotPassword,
   errorMessage,
+  remember,
+  setRemember,
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -132,6 +136,8 @@ const AuthForm: React.FC<AuthFormProps> = ({
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-emerald-600 focus:ring-emerald-600"
             />
             <span className="text-sm text-gray-600 dark:text-zinc-400">

@@ -1,6 +1,7 @@
 export type AuthLoginRequest = {
   email: string;
   password: string;
+  remember_me?: boolean;
 };
 
 export type AuthRegisterRequest = {
