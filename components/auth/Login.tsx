@@ -2,9 +2,9 @@
 import React, { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  AuthLoginRequest,
-  AuthRegisterRequest,
-  AuthResponse,
+  AuthLoginPayload,
+  AuthRegisterPayload,
+  AuthTokenResponse,
 } from "@/lib/types";
 import { post, setAccessToken } from "@/lib/axios";
 import { useLoadingStore } from "@/store/useLoadingStore";
@@ -34,7 +34,7 @@ const Login = () => {
   const [showForgetPassword, setShowForgetPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [remember, setRemember] = useState(false);
-  const [formData, setFormData] = useState<AuthRegisterRequest>({
+  const [formData, setFormData] = useState<AuthRegisterPayload>({
     email: "",
     password: "",
     name: "",
@@ -55,19 +55,19 @@ const Login = () => {
     startLoading();
     try {
       if (isLogin) {
-        const payload: AuthLoginRequest = {
+        const payload: AuthLoginPayload = {
           email: formData.email,
           password: formData.password,
           remember_me: remember,
         };
-        const res = await post<AuthResponse, AuthLoginRequest>(
+        const res = await post<AuthTokenResponse, AuthLoginPayload>(
           "/auth/login",
           payload
         );
         setAccessToken(res.access_token);
         router.push("/dashboard");
       } else {
-        const payload: AuthRegisterRequest = { ...formData };
+        const payload: AuthRegisterPayload = { ...formData };
         if (payload.password !== formData.confirmPassword) {
           setErrorMessage("Password dan konfirmasi password tidak sesuai");
           stopLoading();
@@ -77,7 +77,7 @@ const Login = () => {
           stopLoading();
           return;
         }
-        await post<AuthResponse, AuthRegisterRequest>(
+        await post<AuthTokenResponse, AuthRegisterPayload>(
           "/auth/register",
           payload
         );

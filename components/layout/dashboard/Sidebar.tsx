@@ -22,8 +22,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Skeleton } from "../ui/skeleton";
+} from "../../ui/dropdown-menu";
+import { Skeleton } from "../../ui/skeleton";
+import { useMemo } from "react";
+import Image from "next/image";
 
 interface SidebarProps {
   userData: User | null;
@@ -32,6 +34,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ userData, onLogout, isLoading }: SidebarProps) {
+  // const { user } = useUser();
+  // const [userData] = useState<User | null>(user);
   const initial = userData?.name?.charAt(0)?.toUpperCase() ?? "?";
   const pathname = usePathname();
   const navItems = [
@@ -66,6 +70,21 @@ export function Sidebar({ userData, onLogout, isLoading }: SidebarProps) {
       icon: Bell,
     },
   ];
+  const avatar = userData?.profile?.avatar_url;
+  const resolvedAvatar = useMemo(() => {
+    if (!avatar) return null;
+    if (avatar.startsWith("http://") || avatar.startsWith("https://")) {
+      return avatar;
+    }
+    const apiBase =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+    try {
+      const { origin } = new URL(apiBase);
+      return `${origin}${avatar}`;
+    } catch {
+      return avatar;
+    }
+  }, [avatar]);
 
   return (
     <aside className="hidden w-64 border-r border-b border-gray-200 bg-white lg:block">
@@ -119,9 +138,20 @@ export function Sidebar({ userData, onLogout, isLoading }: SidebarProps) {
               <DropdownMenuTrigger asChild>
                 <button className="w-full outline-none focus-visible:ring-0 focus:ring-0">
                   <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 cursor-pointer hover:bg-gray-100 transition">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white">
-                      {initial}
-                    </div>
+                    {resolvedAvatar ? (
+                      <Image
+                        src={resolvedAvatar}
+                        alt="Avatar"
+                        width={40}
+                        height={40}
+                        priority
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white">
+                        {initial}
+                      </div>
+                    )}
                     <div className="flex-1 text-left">
                       <p className="text-sm text-gray-900">{userData?.name}</p>
                       <p className="text-xs text-gray-500">{userData?.email}</p>

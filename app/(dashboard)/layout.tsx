@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState, type ReactNode } from "react";
-import { Navbar } from "@/components/layout/Navbar";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Navbar } from "@/components/layout/dashboard/Navbar";
+import { Sidebar } from "@/components/layout/dashboard/Sidebar";
 import { get, initAuth, logout } from "@/lib/axios";
 import { User } from "@/lib/types";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { useRouter } from "next/navigation";
+import { UserProvider } from "@/components/providers/UserProvider";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -44,7 +45,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <Sidebar userData={user} onLogout={handleLogout} isLoading={isLoading} />
       <main className="flex-1 flex flex-col overflow-hidden">
         <Navbar userData={user} isLoading={isLoading} />
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <UserProvider value={{ user, isLoading, setUser }}>
+          <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        </UserProvider>
       </main>
     </div>
   );
