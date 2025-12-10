@@ -42,6 +42,12 @@ export type Profile = {
   avatar_url?: Nullable<string>;
 };
 
+export type PasswordChangePayload = {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+};
+
 export type ProfileUpdatePayload = {
   first_name?: string;
   last_name?: string;

@@ -12,6 +12,7 @@ import { api, put } from "@/lib/axios";
 import { Loader2 } from "lucide-react";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { toastError, toastSuccess } from "@/lib/toast";
+import axios from "axios";
 
 export type ActiveTab = "profile" | "security" | "preferences";
 
@@ -153,10 +154,15 @@ const ProfilePage = () => {
         setUser({ ...user, profile: res.data.data });
       }
       toastSuccess("Avatar berhasil diunggah");
-    } catch (err) {
-      console.error("Gagal upload avatar:", err);
-      setErrorMsg("Gagal upload avatar. Coba lagi.");
-      toastError("Gagal upload avatar");
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const message = error.response.data.message;
+        if (message) {
+          setErrorMsg(message);
+          toastError(message);
+          return;
+        }
+      }
     } finally {
       setUploadingAvatar(false);
       stopLoading();

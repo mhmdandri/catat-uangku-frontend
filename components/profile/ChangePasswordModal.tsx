@@ -1,5 +1,10 @@
 "use client";
 
+import { put } from "@/lib/axios";
+import { toastError, toastSuccess } from "@/lib/toast";
+import { PasswordChangePayload } from "@/lib/types";
+import { useLoadingStore } from "@/store/useLoadingStore";
+import axios from "axios";
 import { Eye, EyeOff, X } from "lucide-react";
 import React, { useState } from "react";
 
@@ -9,11 +14,13 @@ type Props = {
 };
 
 const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
-  const [passwordFormData, setPasswordFormData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  const [passwordFormData, setPasswordFormData] =
+    useState<PasswordChangePayload>({
+      old_password: "",
+      new_password: "",
+      confirm_password: "",
+    });
+  const { startLoading, stopLoading } = useLoadingStore();
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -21,13 +28,38 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
 
   if (!open) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Changing password:", passwordFormData);
+    startLoading();
+    try {
+      const res: { message: string } = await put(
+        "/users/password",
+        passwordFormData
+      );
+      toastSuccess(res.message);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as
+          | { error?: string; message?: string }
+          | string
+          | undefined;
+        const message =
+          (typeof data === "object" && data?.error) ||
+          (typeof data === "object" && data?.message) ||
+          (typeof data === "string" ? data : null) ||
+          "Terjadi kesalahan saat mengubah password.";
+        toastError(message);
+      } else {
+        toastError("Terjadi kesalahan saat mengubah password.");
+      }
+      return;
+    } finally {
+      stopLoading();
+    }
     setPasswordFormData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
+      old_password: "",
+      new_password: "",
+      confirm_password: "",
     });
     onClose();
   };
@@ -53,11 +85,11 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
             <div className="relative">
               <input
                 type={showCurrentPassword ? "text" : "password"}
-                value={passwordFormData.currentPassword}
+                value={passwordFormData.old_password}
                 onChange={(e) =>
                   setPasswordFormData((prev) => ({
                     ...prev,
-                    currentPassword: e.target.value,
+                    old_password: e.target.value,
                   }))
                 }
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 pr-12 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
@@ -84,11 +116,11 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
-                value={passwordFormData.newPassword}
+                value={passwordFormData.new_password}
                 onChange={(e) =>
                   setPasswordFormData((prev) => ({
                     ...prev,
-                    newPassword: e.target.value,
+                    new_password: e.target.value,
                   }))
                 }
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 pr-12 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
@@ -115,11 +147,11 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                value={passwordFormData.confirmPassword}
+                value={passwordFormData.confirm_password}
                 onChange={(e) =>
                   setPasswordFormData((prev) => ({
                     ...prev,
-                    confirmPassword: e.target.value,
+                    confirm_password: e.target.value,
                   }))
                 }
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 pr-12 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
