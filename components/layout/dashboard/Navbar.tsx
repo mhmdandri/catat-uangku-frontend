@@ -1,12 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Plus, Bell, LucideIcon } from "lucide-react";
+import { Plus, Bell, LucideIcon, Eye, EyeOff } from "lucide-react";
 import { User } from "@/lib/types";
 import { Skeleton } from "../../ui/skeleton";
 import { useState } from "react";
 import Modal from "../../Modal";
 import { Button } from "../../ui/button";
+import { useBalanceVisibilityStore } from "@/store/useBalanceVisibilityStore";
+import { useAccountModalStore } from "@/store/useAccountModalStore";
 
 interface NavbarProps {
   userData: User | null;
@@ -56,6 +58,12 @@ const PAGE_CONFIG: Record<string, PageConfig> = {
     title: "Rekening",
     description: "Atur dan kelola semua rekening yang kamu miliki",
     actions: [
+      {
+        id: "hide-balance",
+        label: "Sembunyikan Saldo",
+        icon: Eye,
+        variant: "outline",
+      },
       {
         id: "add-account",
         label: "Tambah Rekening",
@@ -115,15 +123,35 @@ const variantClass: Record<ActionVariant, string> = {
 
 export function Navbar({ userData, isLoading }: NavbarProps) {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
+  const { showBalances, toggleShowBalances } = useBalanceVisibilityStore();
+  const { openAddModal } = useAccountModalStore();
   const pathname = usePathname();
 
   const initial = userData?.name ?? "?";
 
-  const config: PageConfig = PAGE_CONFIG[pathname] ?? {
+  const pageConfig: PageConfig = PAGE_CONFIG[pathname] ?? {
     title: "Dashboard",
     description: userData
       ? `Selamat datang kembali, ${initial}!`
       : "Kelola keuanganmu dengan lebih mudah",
+  };
+
+  const actions =
+    pathname === "/dashboard/accounts" && pageConfig.actions
+      ? pageConfig.actions.map((action) =>
+          action.id === "hide-balance"
+            ? {
+                ...action,
+                label: showBalances ? "Sembunyikan Saldo" : "Tampilkan Saldo",
+                icon: showBalances ? EyeOff : Eye,
+              }
+            : action
+        )
+      : pageConfig.actions;
+
+  const config: PageConfig = {
+    ...pageConfig,
+    actions,
   };
 
   const handleActionClick = (actionId: string) => {
@@ -133,7 +161,10 @@ export function Navbar({ userData, isLoading }: NavbarProps) {
         setOpenDeleteModal(true); // ganti dengan modal transaksi kamu
         break;
       case "add-account":
-        console.log("TODO: buka modal tambah rekening");
+        openAddModal();
+        break;
+      case "hide-balance":
+        toggleShowBalances();
         break;
       case "add-group":
         console.log("TODO: buka modal buat grup");

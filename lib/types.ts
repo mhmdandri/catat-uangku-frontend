@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react";
+
 export type UUID = string;
 export type ISODateString = string;
 export type Nullable<T> = T | null;
@@ -98,3 +100,23 @@ export type Preferences = {
     profilePublic: boolean;
   };
 };
+export type AccountType = "bank" | "e-wallet" | "cash";
+export interface Account {
+  id: number;
+  name: string;
+  type: AccountType;
+  balance: number;
+  accountNumber: string;
+  icon: LucideIcon;
+  color: string;
+  transactions: number;
+}
+export type TransactionType = "income" | "expense";
+export interface AccountTransaction {
+  id: number;
+  accountId: number;
+  title: string;
+  amount: number;
+  type: TransactionType;
+  date: string; // ISO string, bisa diubah ke Date kalau mau
+}
