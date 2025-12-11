@@ -15,7 +15,7 @@ function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   );
 }
 
-export function GlobalLoadingOverlay() {
+export default function GlobalLoadingOverlay() {
   const isLoading = useLoadingStore((state) => state.isLoading);
 
   if (!isLoading) return null;

@@ -8,12 +8,14 @@ export const api = axios.create({
 
 let accessToken: string | null = null;
 
-export const initAuth = async () => {
+export const initAuth = async (): Promise<string | null> => {
   try {
     const res = await api.post<{ access_token: string }>("/auth/refresh");
-    accessToken = res.data.access_token;
+    setAccessToken(res.data.access_token);
+    return res.data.access_token;
   } catch {
-    accessToken = null;
+    setAccessToken(null);
+    return null;
   }
 };
 

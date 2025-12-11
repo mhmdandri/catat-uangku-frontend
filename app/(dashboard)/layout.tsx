@@ -13,21 +13,39 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { startLoading, stopLoading, isLoading } = useLoadingStore();
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => {
+    let cancelled = false;
     const fetchUserData = async () => {
       startLoading();
       try {
-        await initAuth();
+        const token = await initAuth();
+        if (!token) {
+          if (!cancelled) {
+            setUser(null);
+            router.replace("/auth?sign=login");
+          }
+          return;
+        }
         const response = await get<{ data: User }>("/auth/me");
-        setUser(response.data);
+        if (!cancelled) {
+          setUser(response.data);
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        return null;
+        if (!cancelled) {
+          setUser(null);
+          router.replace("/auth?sign=login");
+        }
       } finally {
-        stopLoading();
+        if (!cancelled) {
+          stopLoading();
+        }
       }
     };
     fetchUserData();
-  }, [startLoading, stopLoading]);
+    return () => {
+      cancelled = true;
+    };
+  }, [router, startLoading, stopLoading]);
 
   const handleLogout = async () => {
     startLoading();

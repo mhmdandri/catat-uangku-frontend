@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { GlobalLoadingOverlay } from "@/components/GlobalLoading";
+import GlobalLoadingOverlay from "@/components/GlobalLoading";
 import { AppToastContainer } from "@/components/AppToastContainer";
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],

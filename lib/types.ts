@@ -60,6 +60,18 @@ export type ProfileUpdatePayload = {
   age?: number;
 };
 
+export type AccountPayload = {
+  owner_user_id: UUID;
+  group_id?: UUID;
+  name: string;
+  type: "bank" | "e-wallet" | "cash";
+  first_balance: number;
+  currency: string;
+  scope: "personal" | "group";
+  is_shared: boolean;
+  is_active: boolean;
+};
+
 /**
  * User & Groups
  */
@@ -80,6 +92,7 @@ export type User = {
   email: string;
   created_at: ISODateString;
   group_members?: GroupMember[];
+  accounts?: AccountResponse[];
   profile?: Nullable<Profile>;
 };
 
@@ -101,22 +114,59 @@ export type Preferences = {
   };
 };
 export type AccountType = "bank" | "e-wallet" | "cash";
+
+export type AccountResponse = {
+  id: string;
+  owner_user_id: string;
+  group_id: string;
+  name: string;
+  type: AccountType;
+  first_balance: number;
+  balance: number;
+  currency: string;
+  scope: "personal" | "group";
+  is_shared: boolean;
+  is_active: boolean;
+};
+
 export interface Account {
-  id: number;
+  id: UUID;
   name: string;
   type: AccountType;
   balance: number;
   accountNumber: string;
   icon: LucideIcon;
   color: string;
-  transactions: number;
+  transactions?: number;
 }
-export type TransactionType = "income" | "expense";
+
 export interface AccountTransaction {
-  id: number;
-  accountId: number;
+  id: UUID;
+  accountId: UUID;
   title: string;
   amount: number;
   type: TransactionType;
-  date: string; // ISO string, bisa diubah ke Date kalau mau
+  date: ISODateString;
+}
+
+export type Transaction = {
+  id: UUID;
+  group_id: Nullable<UUID>;
+  category_id: UUID;
+  created_by_user_id: UUID;
+  date: ISODateString;
+  type: TransactionType;
+  total_amount: number;
+  scope: "personal" | "group";
+  description?: string;
+  transaction_lines?: TransactionLine[];
+};
+export type TransactionType = "income" | "expense";
+export interface TransactionLine {
+  id: UUID;
+  transaction_id: UUID;
+  account_id: UUID;
+  debit: number;
+  credit: number;
+  note: string;
 }

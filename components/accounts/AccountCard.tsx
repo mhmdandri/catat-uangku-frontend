@@ -11,16 +11,20 @@ import type { Account, AccountTransaction } from "@/lib/types";
 interface AccountCardProps {
   account: Account;
   transactions: AccountTransaction[];
+  transactionsLoading?: boolean;
+  transactionsError?: string | null;
   isSelected: boolean;
   showBalances: boolean;
   onSelect: () => void;
-  onEdit: (accountId: number) => void;
-  onDelete: (accountId: number) => void;
+  onEdit: (accountId: Account["id"]) => void;
+  onDelete: (accountId: Account["id"]) => void;
 }
 
 export const AccountCard: React.FC<AccountCardProps> = ({
   account,
   transactions,
+  transactionsLoading,
+  transactionsError,
   isSelected,
   showBalances,
   onSelect,
@@ -28,6 +32,8 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   onDelete,
 }) => {
   const Icon = account.icon;
+  const transactionCount = account.transactions ?? 0;
+  const accountNumber = account.accountNumber || "-";
 
   return (
     <div
@@ -41,7 +47,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
           </div>
           <div>
             <h3 className="text-lg text-gray-900">{account.name}</h3>
-            <p className="text-sm text-gray-500">{account.accountNumber}</p>
+            <p className="text-sm text-gray-500">{accountNumber}</p>
           </div>
         </div>
         <div className="flex gap-1">
@@ -78,7 +84,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <ArrowUpDown className="h-4 w-4" />
-          <span>{account.transactions} transaksi</span>
+          <span>{transactionCount} transaksi</span>
         </div>
         <span className="text-xs text-gray-500 capitalize">{account.type}</span>
       </div>
@@ -86,7 +92,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({
       {isSelected && (
         <div className="mt-4 space-y-2 border-t border-gray-200 pt-4">
           <h4 className="mb-2 text-sm text-gray-700">Transaksi Terbaru</h4>
-          {transactions.length > 0 ? (
+          {transactionsLoading ? (
+            <p className="py-4 text-center text-sm text-gray-500">
+              Memuat transaksi...
+            </p>
+          ) : transactionsError ? (
+            <p className="py-4 text-center text-sm text-red-600">
+              {transactionsError}
+            </p>
+          ) : transactions.length > 0 ? (
             transactions.map((transaction) => (
               <div
                 key={transaction.id}
