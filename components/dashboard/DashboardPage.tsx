@@ -179,7 +179,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <div className="mb-6 grid gap-6 md:grid-cols-3">
+      <div className="mb-4 sm:mb-6 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {balanceCards.map((card) => (
           <TitleCard
             key={card.title}
@@ -190,16 +190,13 @@ export default function DashboardPage() {
           />
         ))}
       </div>
-      {/* Charts Row */}
-      <div className="mb-6 grid gap-6 lg:grid-cols-2">
-        <MonthlyFinanceChart data={monthlyData} />
-        <CategoryExpenseChart data={categoryExpenses} />
+      <div className="mb-4 sm:mb-6 grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+        <MonthlyFinanceChart data={monthlyData} height={240} />
+        <CategoryExpenseChart data={categoryExpenses} height={240} />
       </div>
-      {/* Bottom Row */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3">
         <RecentTransactionsCard transactions={recentTransactions} />
-
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-1">
           <GoalsCard goals={goals} />
           <BudgetCard budgets={budgets} />
         </div>

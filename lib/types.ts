@@ -12,18 +12,15 @@ export type AuthLoginPayload = {
   password: string;
   remember_me?: boolean;
 };
-
 export type AuthRegisterPayload = {
   name: string;
   email: string;
   password: string;
   confirmPassword: string;
 };
-
 export type AuthTokenResponse = {
   access_token: string;
 };
-
 /**
  * Profile
  */
@@ -43,13 +40,11 @@ export type Profile = {
   updated_at?: ISODateString;
   avatar_url?: Nullable<string>;
 };
-
 export type PasswordChangePayload = {
   old_password: string;
   new_password: string;
   confirm_password: string;
 };
-
 export type ProfileUpdatePayload = {
   first_name?: string;
   last_name?: string;
@@ -59,7 +54,6 @@ export type ProfileUpdatePayload = {
   birthdate?: string;
   age?: number;
 };
-
 export type AddAccountFormData = {
   name: string;
   type: AccountType;
@@ -67,7 +61,6 @@ export type AddAccountFormData = {
   currency?: string | null;
   first_balance: number;
 };
-
 export type EditAccountPayload = {
   name?: string;
   type: AccountType;
@@ -75,7 +68,6 @@ export type EditAccountPayload = {
   currency?: string;
   is_active?: boolean;
 };
-
 export type AccountPayload = {
   owner_user_id: UUID;
   group_id?: Nullable<UUID>;
@@ -88,12 +80,10 @@ export type AccountPayload = {
   is_shared: boolean;
   is_active: boolean;
 };
-
 /**
  * User & Groups
  */
 export type GroupRole = "admin" | "member";
-
 export type GroupMember = {
   id: UUID;
   user_id: UUID;
@@ -102,7 +92,6 @@ export type GroupMember = {
   joined_at: ISODateString;
   is_active: boolean;
 };
-
 export type User = {
   id: UUID;
   name: string;
@@ -112,7 +101,6 @@ export type User = {
   accounts?: AccountResponse[];
   profile?: Nullable<Profile>;
 };
-
 /**
  * UI Preferences (local only)
  */
@@ -130,7 +118,6 @@ export type Preferences = {
     profilePublic: boolean;
   };
 };
-
 export type AccountResponse = {
   id: UUID;
   owner_user_id: UUID;
@@ -146,9 +133,7 @@ export type AccountResponse = {
   is_active: boolean;
   transaction_lines?: TransactionLine[];
 };
-
 export type Account = AccountResponse;
-
 export type CurrencySummary = {
   currency: string;
   totalBalance: number;
@@ -156,14 +141,12 @@ export type CurrencySummary = {
   totalEWalletBalance: number;
   totalCashBalance: number;
 };
-
 export type AccountTotals = {
   totalBalance: number;
   totalBankBalance: number;
   totalEWalletBalance: number;
   totalCashBalance: number;
 };
-
 export type AccountTransaction = {
   id: UUID;
   accountId: UUID;
@@ -172,11 +155,9 @@ export type AccountTransaction = {
   type: TransactionType;
   date: ISODateString;
 };
-
 export type AccountTransactionsMap = Record<UUID, AccountTransaction[]>;
 export type AccountTransactionsLoadingMap = Record<UUID, boolean>;
 export type AccountTransactionsErrorMap = Record<UUID, string | null>;
-
 export type Transaction = {
   id: UUID;
   group_id?: Nullable<UUID>;

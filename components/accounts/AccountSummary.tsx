@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { CurrencySummary } from "@/lib/types";
 import { ChevronLeft, ChevronRight, Sparkles, Wallet } from "lucide-react";
@@ -38,7 +37,6 @@ export const AccountSummary: React.FC<AccountSummaryProps> = ({
         </div>
 
         <div className="relative">
-          {/* Header */}
           <div className="mb-6 flex items-start justify-between">
             <div>
               <div className="mb-1 flex items-center gap-2">
@@ -83,20 +81,12 @@ export const AccountSummary: React.FC<AccountSummaryProps> = ({
               </div>
             </div>
           </div>
-
-          {/* Content */}
           {useCarousel ? (
             <div className="relative">
               <div
                 ref={viewportRef}
                 onScroll={updateNavState}
-                className="
-        overflow-x-auto overflow-y-hidden
-        scroll-smooth
-        snap-x snap-mandatory
-        [-ms-overflow-style:none] [scrollbar-width:none]
-        [&::-webkit-scrollbar]:hidden
-      "
+                className="overflow-x-auto overflow-y-hidden scroll-smooth snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               >
                 <div className="flex">
                   {summaries.map((s, idx) => (

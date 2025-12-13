@@ -9,13 +9,12 @@ import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
 import { ProfileUpdatePayload, User, type Preferences } from "@/lib/types";
 import { useUser } from "../providers/UserProvider";
 import { api, put } from "@/lib/axios";
-import { Loader2 } from "lucide-react";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { toastError, toastSuccess } from "@/lib/toast";
 import axios from "axios";
+import ProfileSkeleton from "./ProfileSkeleton";
 
 export type ActiveTab = "profile" | "security" | "preferences";
-
 const ProfilePage = () => {
   const { user, setUser } = useUser();
   const { isLoading, startLoading, stopLoading } = useLoadingStore();
@@ -32,7 +31,6 @@ const ProfilePage = () => {
     address: "",
     bio: "",
   });
-
   useEffect(() => {
     if (!user) {
       setProfileFormData({
@@ -185,11 +183,7 @@ const ProfilePage = () => {
 
   return (
     <>
-      {(!fullProfile || isLoading) && (
-        <div className="flex h-40 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
-        </div>
-      )}
+      {(!fullProfile || isLoading) && <ProfileSkeleton />}
       {fullProfile && (
         <>
           <ProfileHeaderCard

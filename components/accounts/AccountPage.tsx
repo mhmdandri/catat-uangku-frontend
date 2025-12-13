@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountSummary } from "@/components/accounts/AccountSummary";
 import { AccountCard } from "@/components/accounts/AccountCard";
@@ -63,7 +62,6 @@ const AccountPage: React.FC = () => {
     number: "",
     is_active: true,
   });
-
   useEffect(() => {
     let active = true;
     if (!user?.id) {
@@ -71,7 +69,6 @@ const AccountPage: React.FC = () => {
       setIsLoadingAccounts(false);
       return;
     }
-
     const fetchAccounts = async () => {
       setIsLoadingAccounts(true);
       setFetchError(null);
@@ -81,22 +78,19 @@ const AccountPage: React.FC = () => {
         );
         if (!active) return;
         setAccounts(response.data ?? []);
-      } catch (error) {
+      } catch {
         if (!active) return;
-        console.error("Failed to fetch accounts:", error);
         setFetchError("Gagal memuat daftar akun");
         setAccounts([]);
       } finally {
         if (active) setIsLoadingAccounts(false);
       }
     };
-
     void fetchAccounts();
     return () => {
       active = false;
     };
   }, [user?.id]);
-
   const loadTransactionsForAccount = useCallback(
     async (accountId: UUID) => {
       if (
@@ -121,11 +115,11 @@ const AccountPage: React.FC = () => {
           setTransactionsByAccount((prev) => ({ ...prev, [accountId]: [] }));
           setTransactionsError((prev) => ({ ...prev, [accountId]: null }));
         } else {
-          console.warn("Failed to fetch transactions:", error);
           const message =
             axios.isAxiosError(error) && error.response?.data?.error
               ? String(error.response.data.error)
               : "Gagal memuat transaksi";
+          setTransactionsByAccount((prev) => ({ ...prev, [accountId]: [] }));
           setTransactionsError((prev) => ({ ...prev, [accountId]: message }));
         }
       } finally {
@@ -152,10 +146,8 @@ const AccountPage: React.FC = () => {
     transactionsByAccount,
     transactionsLoading,
   ]);
-
   const getAccountTransactions = (accountId: UUID): AccountTransaction[] =>
     transactionsByAccount[accountId] ?? [];
-
   const handleAccountSelect = useCallback(
     (accountId: UUID) => {
       const nextSelected = selectedAccountId === accountId ? null : accountId;
@@ -166,7 +158,6 @@ const AccountPage: React.FC = () => {
     },
     [loadTransactionsForAccount, selectedAccountId]
   );
-
   const handleAddAccount = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -188,7 +179,6 @@ const AccountPage: React.FC = () => {
         setFormData(createInitialAccountForm());
         closeAddModal();
       } catch (error) {
-        console.error("Failed to add account:", error);
         if (axios.isAxiosError(error)) {
           const message =
             (error.response?.data as { error?: string })?.error ??
@@ -205,7 +195,6 @@ const AccountPage: React.FC = () => {
     },
     [closeAddModal, formData, user?.id]
   );
-
   const handleConfirmDelete = (accountId: UUID) => {
     setShowModalDelete(true);
     setSelectedAccDeleteId(accountId);
@@ -283,7 +272,6 @@ const AccountPage: React.FC = () => {
     [accounts]
   );
   const isLoading = isLoadingAccounts || isUserLoading;
-
   return (
     <>
       {showEditForm && (
@@ -307,17 +295,15 @@ const AccountPage: React.FC = () => {
       ) : (
         <AccountSummary summaries={summaries} showBalances={showBalances} />
       )}
-
       {fetchError && !isLoading && (
         <p className="mb-3 text-sm text-red-600">{fetchError}</p>
       )}
-
-      <div className="mb-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-4 sm:mb-6 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {isLoadingAccounts &&
           Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+              className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm"
             >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -336,13 +322,11 @@ const AccountPage: React.FC = () => {
               <Skeleton className="h-10 w-full" />
             </div>
           ))}
-
         {!isLoadingAccounts && accounts.length === 0 && (
-          <div className="col-span-full rounded-xl border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">
+          <div className="col-span-full rounded-xl border border-dashed border-border bg-card p-4 sm:p-6 text-center text-sm text-muted-foreground">
             Belum ada akun. Tambahkan akun baru dari tombol di kanan atas.
           </div>
         )}
-
         {!isLoadingAccounts &&
           accounts.map((account) => (
             <AccountCard
@@ -360,11 +344,11 @@ const AccountPage: React.FC = () => {
           ))}
       </div>
       {isLoadingAccounts ? (
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-3"
+              className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm space-y-3"
             >
               <div className="flex items-center justify-between">
                 <Skeleton className="h-5 w-32" />
@@ -382,7 +366,6 @@ const AccountPage: React.FC = () => {
           transactionsByAccount={transactionsByAccount}
         />
       )}
-
       <AddAccountModal
         open={isAddModalOpen}
         formData={formData}

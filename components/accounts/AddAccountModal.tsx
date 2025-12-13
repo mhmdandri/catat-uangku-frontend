@@ -21,52 +21,63 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6 sm:p-6">
+      <div className="w-full max-w-sm sm:max-w-md rounded-xl bg-card border border-border p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-xl text-gray-900">Tambah Rekening Baru</h3>
+          <h3 className="text-xl text-foreground">Tambah Rekening Baru</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 transition hover:bg-gray-100"
+            className="rounded-lg p-2 transition hover:bg-gray-100 dark:hover:bg-white/5"
           >
-            <X className="h-5 w-5 text-gray-600" />
+            <X className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
-
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="mb-2 block text-sm text-gray-700">
+            <label
+              htmlFor="nama"
+              className="mb-2 block text-sm text-muted-foreground"
+            >
               Nama Rekening
             </label>
             <input
+              id="nama"
               type="text"
               value={formData.name}
               onChange={(e) => onChange({ ...formData, name: e.target.value })}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="Contoh: BCA - Main"
               required
             />
           </div>
           <div>
-            <label className="mb-2 block text-sm text-gray-700">
+            <label
+              htmlFor="no"
+              className="mb-2 block text-sm text-muted-foreground"
+            >
               No Rekening
             </label>
             <input
+              id="no"
               type="text"
               value={formData.number || ""}
               onChange={(e) =>
                 onChange({ ...formData, number: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="4123-456-7890"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-gray-700">
+            <label
+              htmlFor="type"
+              className="mb-2 block text-sm text-muted-foreground"
+            >
               Tipe Rekening
             </label>
             <select
+              id="type"
               value={formData.type}
               onChange={(e) =>
                 onChange({
@@ -74,7 +85,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                   type: e.target.value as AccountType,
                 })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
             >
               <option value="bank">Bank</option>
               <option value="e-wallet">E-Wallet</option>
@@ -85,7 +96,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
           <div>
             <label
               htmlFor="currency"
-              className="mb-2 block text-sm text-gray-700"
+              className="mb-2 block text-sm text-muted-foreground"
             >
               Mata Uang
             </label>
@@ -102,10 +113,14 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-gray-700">
+            <label
+              htmlFor="balance"
+              className="mb-2 block text-sm text-muted-foreground"
+            >
               Saldo Awal
             </label>
             <input
+              id="balance"
               type="number"
               value={formData.first_balance}
               onChange={(e) =>
@@ -114,23 +129,23 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                   first_balance: parseFloat(e.target.value) || 0,
                 })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="0"
               required
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-50"
+              className="w-full sm:flex-1 rounded-lg border border-border px-4 py-2.5 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700"
+              className="w-full sm:flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-white transition hover:bg-emerald-700"
             >
               Tambah Rekening
             </button>

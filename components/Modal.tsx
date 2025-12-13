@@ -1,7 +1,5 @@
 "use client";
-
 import React from "react";
-
 import {
   Dialog,
   DialogContent,
@@ -13,14 +11,12 @@ import {
 import { cn } from "@/lib/utils";
 
 type ModalSize = "sm" | "md" | "lg" | "xl";
-
 const sizeClassName: Record<ModalSize, string> = {
   sm: "sm:max-w-md",
   md: "sm:max-w-lg",
   lg: "sm:max-w-2xl",
   xl: "sm:max-w-3xl",
 };
-
 interface ModalProps {
   open: boolean;
   onClose: () => void;
@@ -32,7 +28,6 @@ interface ModalProps {
   className?: string;
   hideCloseButton?: boolean;
 }
-
 const Modal: React.FC<ModalProps> = ({
   open,
   onClose,

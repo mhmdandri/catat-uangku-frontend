@@ -1,7 +1,6 @@
 "use client";
-
 import type { Preferences } from "@/lib/types";
-
+import { Switch } from "@/components/ui/switch";
 type Props = {
   preferences: Preferences;
   onPreferenceChange: (
@@ -10,27 +9,28 @@ type Props = {
     value: unknown
   ) => void;
 };
-
 const ProfilePreferencesTab: React.FC<Props> = ({
   preferences,
   onPreferenceChange,
 }) => {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg text-gray-900">Pengaturan Umum</h3>
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+        <h3 className="mb-4 text-lg text-foreground">Pengaturan Umum</h3>
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-900">Mata Uang</p>
-              <p className="text-xs text-gray-500">Pilih mata uang default</p>
+              <p className="text-sm text-foreground">Mata Uang</p>
+              <p className="text-xs text-muted-foreground">
+                Pilih mata uang default
+              </p>
             </div>
             <select
               value={preferences.currency}
               onChange={(e) =>
                 onPreferenceChange("currency", "", e.target.value)
               }
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              className="w-full sm:w-auto rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
             >
               <option value="IDR">IDR - Rupiah</option>
               <option value="USD">USD - Dollar</option>
@@ -38,17 +38,19 @@ const ProfilePreferencesTab: React.FC<Props> = ({
             </select>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-900">Bahasa</p>
-              <p className="text-xs text-gray-500">Pilih bahasa interface</p>
+              <p className="text-sm text-foreground">Bahasa</p>
+              <p className="text-xs text-muted-foreground">
+                Pilih bahasa interface
+              </p>
             </div>
             <select
               value={preferences.language}
               onChange={(e) =>
                 onPreferenceChange("language", "", e.target.value)
               }
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              className="w-full sm:w-auto rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
             >
               <option value="id">Indonesia</option>
               <option value="en">English</option>
@@ -56,10 +58,8 @@ const ProfilePreferencesTab: React.FC<Props> = ({
           </div>
         </div>
       </div>
-
-      {/* Notifikasi */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg text-gray-900">Notifikasi</h3>
+      <div className="w-full sm:w-auto rounded-lg border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-4 text-lg text-foreground">Notifikasi</h3>
         <div className="space-y-4">
           {[
             {
@@ -85,79 +85,57 @@ const ProfilePreferencesTab: React.FC<Props> = ({
           ].map((item) => (
             <div key={item.key} className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-900">{item.title}</p>
-                <p className="text-xs text-gray-500">{item.desc}</p>
+                <p className="text-sm text-foreground">{item.title}</p>
+                <p className="text-xs text-muted-foreground">{item.desc}</p>
               </div>
-              <label className="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  checked={
-                    preferences.notifications[
-                      item.key as keyof Preferences["notifications"]
-                    ]
-                  }
-                  onChange={(e) =>
-                    onPreferenceChange(
-                      "notifications",
-                      item.key,
-                      e.target.checked
-                    )
-                  }
-                  className="peer sr-only"
-                />
-                <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300"></div>
-              </label>
+              <Switch
+                checked={
+                  preferences.notifications[
+                    item.key as keyof Preferences["notifications"]
+                  ]
+                }
+                onCheckedChange={(checked) =>
+                  onPreferenceChange("notifications", item.key, checked)
+                }
+                aria-label={item.title}
+              />
             </div>
           ))}
         </div>
       </div>
-
-      {/* Privasi */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg text-gray-900">Privasi</h3>
+      <div className="w-full sm:w-auto rounded-lg border border-border bg-card p-6 shadow-sm">
+        <h3 className="mb-4 text-lg text-foreground">Privasi</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-900">Tampilkan Saldo</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm text-foreground">Tampilkan Saldo</p>
+              <p className="text-xs text-muted-foreground">
                 Tampilkan saldo secara default
               </p>
             </div>
-            <label className="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={preferences.privacy.showBalance}
-                onChange={(e) =>
-                  onPreferenceChange("privacy", "showBalance", e.target.checked)
-                }
-                className="peer sr-only"
-              />
-              <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300"></div>
-            </label>
+            <Switch
+              checked={preferences.privacy.showBalance}
+              onCheckedChange={(checked) =>
+                onPreferenceChange("privacy", "showBalance", checked)
+              }
+              aria-label="Tampilkan Saldo"
+            />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-900">Profil Publik</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm text-foreground">Profil Publik</p>
+              <p className="text-xs text-muted-foreground">
                 Izinkan orang lain melihat profil Anda
               </p>
             </div>
-            <label className="relative inline-flex cursor-pointer items-center">
-              <input
-                type="checkbox"
-                checked={preferences.privacy.profilePublic}
-                onChange={(e) =>
-                  onPreferenceChange(
-                    "privacy",
-                    "profilePublic",
-                    e.target.checked
-                  )
-                }
-                className="peer sr-only"
-              />
-              <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300"></div>
-            </label>
+            <Switch
+              checked={preferences.privacy.profilePublic}
+              onCheckedChange={(checked) =>
+                onPreferenceChange("privacy", "profilePublic", checked)
+              }
+              aria-label="Profil Publik"
+            />
           </div>
         </div>
       </div>

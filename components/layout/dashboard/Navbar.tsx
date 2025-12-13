@@ -9,10 +9,12 @@ import Modal from "../../Modal";
 import { Button } from "../../ui/button";
 import { useBalanceVisibilityStore } from "@/store/useBalanceVisibilityStore";
 import { useAccountModalStore } from "@/store/useAccountModalStore";
+import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
 
 interface NavbarProps {
   userData: User | null;
   isLoading?: boolean;
+  onLogout?: () => void;
 }
 
 type ActionVariant = "primary" | "outline" | "danger";
@@ -117,11 +119,13 @@ const PAGE_CONFIG: Record<string, PageConfig> = {
 const variantClass: Record<ActionVariant, string> = {
   primary:
     "bg-emerald-600 text-white hover:bg-emerald-700 border border-transparent",
-  outline: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50",
-  danger: "bg-red-600 text-white hover:bg-red-700 border border-transparent",
+  outline:
+    "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-transparent dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-white/5",
+  danger:
+    "bg-red-600 text-white hover:bg-red-700 border border-transparent dark:bg-red-500 dark:hover:bg-red-600",
 };
 
-export function Navbar({ userData, isLoading }: NavbarProps) {
+export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const { showBalances, toggleShowBalances } = useBalanceVisibilityStore();
   const { openAddModal } = useAccountModalStore();
@@ -157,8 +161,7 @@ export function Navbar({ userData, isLoading }: NavbarProps) {
   const handleActionClick = (actionId: string) => {
     switch (actionId) {
       case "add-transaction":
-        // contoh: buka modal tambah transaksi
-        setOpenDeleteModal(true); // ganti dengan modal transaksi kamu
+        setOpenDeleteModal(true);
         break;
       case "add-account":
         openAddModal();
@@ -171,7 +174,6 @@ export function Navbar({ userData, isLoading }: NavbarProps) {
         break;
       case "edit-profile":
         console.log("TODO: trigger mode edit profil");
-        // idealnya di-handle via context / callback dari page
         break;
       case "profile-settings":
         console.log("TODO: buka pengaturan profil");
@@ -189,7 +191,6 @@ export function Navbar({ userData, isLoading }: NavbarProps) {
 
   return (
     <>
-      {/* contoh modal reuse, sekarang dipakai buat demo action */}
       <Modal
         open={openDeleteModal}
         onClose={() => setOpenDeleteModal(false)}
@@ -203,40 +204,54 @@ export function Navbar({ userData, isLoading }: NavbarProps) {
       >
         <p>Isi modal action di sini.</p>
       </Modal>
-
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl text-gray-900">{config.title}</h1>
-
+      <header className="border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="truncate text-lg sm:text-2xl text-foreground">
+              {config.title}
+            </h1>
             {isLoading || !userData ? (
-              <Skeleton className="h-4 mt-2 w-48" />
+              <Skeleton className="h-4 mt-2 w-40 sm:w-48" />
             ) : config.description ? (
-              <p className="text-sm text-gray-500 mt-1">{config.description}</p>
+              <p className="mt-1 line-clamp-2 text-xs sm:text-sm text-muted-foreground">
+                {config.description}
+              </p>
             ) : userData ? (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 line-clamp-2 text-xs sm:text-sm text-muted-foreground">
                 {`Selamat datang kembali, ${initial}!`}
               </p>
             ) : null}
           </div>
-
-          {/* Action per page */}
           {config.actions && config.actions.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="hidden lg:flex shrink-0 items-center gap-2">
               {config.actions.map((action) => (
                 <Button
                   key={action.id}
                   onClick={() => handleActionClick(action.id)}
-                  className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition ${
+                  aria-label={action.label}
+                  title={action.label}
+                  className={`inline-flex items-center justify-center rounded-lg transition ${
                     variantClass[action.variant ?? "primary"]
-                  }`}
+                  } h-10 w-10 p-0 sm:h-auto sm:w-auto sm:p-0 sm:px-4 sm:py-2`}
                 >
-                  <action.icon className="h-4 w-4" />
-                  <span>{action.label}</span>
+                  <action.icon className="h-5 w-5 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{action.label}</span>
                 </Button>
               ))}
             </div>
           )}
+          <div className="lg:hidden">
+            {isLoading || !userData ? (
+              <Skeleton className="h-10 w-10 rounded-full" />
+            ) : (
+              <ProfileDropdown
+                user={userData}
+                onLogout={onLogout}
+                align="end"
+                variant="icon"
+              />
+            )}
+          </div>
         </div>
       </header>
     </>

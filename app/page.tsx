@@ -8,7 +8,7 @@ import NavBar from "@/components/NavBar";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-linear-to-b from-emerald-50 to-white">
+    <div className="min-h-dvh bg-linear-to-b from-emerald-50 to-white dark:from-zinc-950 dark:via-zinc-950 dark:to-black transition-colors text-foreground">
       <NavBar />
       <Hero />
       <Features />

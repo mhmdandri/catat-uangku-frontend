@@ -1,10 +1,11 @@
 "use client";
-
 import { Calendar, Camera, Edit } from "lucide-react";
-import { User } from "@/lib/types";
-import { useMemo, useRef, useState } from "react";
+import { Account, Transaction, User } from "@/lib/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-
+import { useLoadingStore } from "@/store/useLoadingStore";
+import { get } from "@/lib/axios";
+import { differenceInMonths } from "date-fns";
 type Props = {
   userData: User;
   stats: {
@@ -18,7 +19,6 @@ type Props = {
   onUploadAvatar?: (file: File) => void;
   isUploadingAvatar?: boolean;
 };
-
 const ProfileHeaderCard: React.FC<Props> = ({
   userData,
   stats,
@@ -29,6 +29,40 @@ const ProfileHeaderCard: React.FC<Props> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [avatarError, setAvatarError] = useState(false);
+  const [transaction, setTransaction] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const { startLoading, stopLoading } = useLoadingStore();
+  const fetchTrx = useCallback(async () => {
+    startLoading();
+    try {
+      const resTrx = await get<{ data: Transaction[] }>(
+        `/transactions/user/${userData.id}`
+      );
+      const resAcc = await get<{ data: Account[] }>(
+        `/accounts/user/${userData.id}`
+      );
+      setAccounts(resAcc.data);
+      setTransaction(resTrx.data);
+    } catch {
+    } finally {
+      stopLoading();
+    }
+  }, [startLoading, stopLoading, userData.id]);
+  useEffect(() => {
+    console.log(userData);
+    fetchTrx();
+  }, [transaction.length, fetchTrx, userData]);
+
+  const umurAkun = useMemo(() => {
+    const createdAt = userData?.created_at;
+    if (!createdAt) return "-";
+    const createdDate = new Date(createdAt.replace(" ", "T"));
+    if (Number.isNaN(createdDate.getTime())) return "-";
+    const months = differenceInMonths(new Date(), createdDate);
+    return months;
+  }, [userData?.created_at]);
+  console.log(umurAkun);
+
   const handlePick = () => {
     if (!onUploadAvatar) return;
     inputRef.current?.click();
@@ -41,7 +75,6 @@ const ProfileHeaderCard: React.FC<Props> = ({
       e.target.value = "";
     }
   };
-
   const avatar = userData.profile?.avatar_url;
   const resolvedAvatar = useMemo(() => {
     if (!avatar) return null;
@@ -58,13 +91,12 @@ const ProfileHeaderCard: React.FC<Props> = ({
     }
   }, [avatar]);
   const showAvatar = resolvedAvatar && !avatarError;
-
   return (
-    <div className="mb-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div className="h-32 bg-linear-to-br from-emerald-600 to-emerald-700"></div>
-      <div className="px-6 pb-6">
-        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex items-end gap-4">
+      <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end">
             <div className="relative -mt-16">
               {showAvatar ? (
                 <Image
@@ -74,11 +106,11 @@ const ProfileHeaderCard: React.FC<Props> = ({
                   height={128}
                   unoptimized
                   priority
-                  className="h-32 w-32 rounded-full border-4 border-white object-cover"
+                  className="h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-card object-cover"
                   onError={() => setAvatarError(true)}
                 />
               ) : (
-                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-white bg-emerald-600 text-4xl text-white">
+                <div className="flex h-24 w-24 sm:h-32 sm:w-32 items-center justify-center rounded-full border-4 border-card bg-emerald-600 text-4xl text-white">
                   {userData.name.charAt(0)}
                 </div>
               )}
@@ -95,17 +127,17 @@ const ProfileHeaderCard: React.FC<Props> = ({
                     type="button"
                     onClick={handlePick}
                     disabled={isUploadingAvatar}
-                    className="absolute bottom-0 right-0 rounded-full bg-white p-2 shadow-lg transition hover:bg-gray-50 disabled:opacity-60"
+                    className="absolute bottom-0 right-0 rounded-full bg-card p-2 shadow-lg transition hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-60"
                   >
-                    <Camera className="h-5 w-5 text-gray-600" />
+                    <Camera className="h-5 w-5 text-muted-foreground" />
                   </button>
                 </>
               )}
             </div>
             <div className="pb-2">
-              <h2 className="text-2xl text-gray-900">{userData.name}</h2>
-              <p className="text-sm text-gray-500">{userData.email}</p>
-              <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+              <h2 className="text-2xl text-foreground">{userData.name}</h2>
+              <p className="text-sm text-muted-foreground">{userData.email}</p>
+              <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 <span>
                   Bergabung sejak{" "}
@@ -117,11 +149,11 @@ const ProfileHeaderCard: React.FC<Props> = ({
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex w-full sm:w-auto gap-2">
             {!isEditingProfile && (
               <button
                 onClick={onEdit}
-                className="flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-gray-700 transition hover:bg-gray-50"
+                className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5"
               >
                 <Edit className="h-4 w-4" />
                 <span>Edit Profil</span>
@@ -129,25 +161,22 @@ const ProfileHeaderCard: React.FC<Props> = ({
             )}
           </div>
         </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-lg bg-gray-50 p-4 text-center">
-            <p className="text-2xl text-emerald-600">
-              {stats.totalTransactions}
-            </p>
-            <p className="text-sm text-gray-600">Transaksi</p>
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
+          <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
+            <p className="text-2xl text-emerald-600">{transaction.length}</p>
+            <p className="text-sm text-muted-foreground">Transaksi</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4 text-center">
-            <p className="text-2xl text-emerald-600">{stats.totalAccounts}</p>
-            <p className="text-sm text-gray-600">Rekening</p>
+          <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
+            <p className="text-2xl text-emerald-600">{accounts.length}</p>
+            <p className="text-sm text-muted-foreground">Rekening</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4 text-center">
+          <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
             <p className="text-2xl text-emerald-600">{stats.totalGroups}</p>
-            <p className="text-sm text-gray-600">Grup</p>
+            <p className="text-sm text-muted-foreground">Grup</p>
           </div>
-          <div className="rounded-lg bg-gray-50 p-4 text-center">
-            <p className="text-2xl text-emerald-600">{stats.memberSince}</p>
-            <p className="text-sm text-gray-600">Member</p>
+          <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
+            <p className="text-2xl text-emerald-600">{umurAkun} bulan</p>
+            <p className="text-sm text-muted-foreground">Member</p>
           </div>
         </div>
       </div>

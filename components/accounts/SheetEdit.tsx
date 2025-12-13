@@ -32,19 +32,19 @@ const SheetEdit = ({
   return (
     <>
       <Sheet open={open} onOpenChange={onClose}>
-        <SheetContent>
-          <SheetHeader>
+        <SheetContent className="px-3 sm:px-6">
+          <SheetHeader className="pb-6">
             <SheetTitle>Edit account</SheetTitle>
             <SheetDescription>
               Atur perubahan akun anda disini. klik tombol simpan ketika sudah
               selesai.
             </SheetDescription>
           </SheetHeader>
-          <div className="grid flex-1 auto-rows-min gap-6 px-4">
+          <div className="grid flex-1 auto-rows-min gap-5 sm:gap-6">
             <div className="grid gap-3">
-              <Label htmlFor="name">Nama Akun</Label>
+              <Label htmlFor="nama">Nama Akun</Label>
               <Input
-                id="name"
+                id="nama"
                 value={editForm.name}
                 onChange={(e) =>
                   setEditForm({ ...editForm, name: e.target.value })
@@ -102,7 +102,7 @@ const SheetEdit = ({
 
               <div className="flex items-center gap-2">
                 <Switch
-                  className="scale-125"
+                  className="scale-110 sm:scale-125"
                   id="isActive"
                   checked={editForm?.is_active}
                   onCheckedChange={(checked) =>
@@ -112,10 +112,14 @@ const SheetEdit = ({
               </div>
             </div>
           </div>
-          <SheetFooter>
-            <Button onClick={onSave}>Save changes</Button>
+          <SheetFooter className="pt-6 flex gap-2 sm:flex-row sm:justify-end">
+            <Button onClick={onSave} className="w-full sm:w-auto">
+              Save changes
+            </Button>
             <SheetClose asChild>
-              <Button variant="outline">Close</Button>
+              <Button variant="outline" className="w-full sm:w-auto">
+                Close
+              </Button>
             </SheetClose>
           </SheetFooter>
         </SheetContent>

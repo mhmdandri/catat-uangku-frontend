@@ -1,16 +1,13 @@
 "use client";
-
 import React from "react";
 import { TrendingUp } from "lucide-react";
 import { formatMoney, getCurrencySymbol } from "@/lib/account-helpers";
 import { CurrencySummary } from "@/lib/types";
-
 interface CurrencyCardBaseProps {
   summary: CurrencySummary;
   showBalances: boolean;
   isSingleCurrency: boolean;
 }
-
 export const CurrencyCardBase: React.FC<CurrencyCardBaseProps> = ({
   summary,
   showBalances,
@@ -19,7 +16,6 @@ export const CurrencyCardBase: React.FC<CurrencyCardBaseProps> = ({
   return (
     <div className="group relative overflow-hidden rounded-xl bg-white/10 p-5 backdrop-blur-md transition-all duration-300 hover:bg-white/20 hover:shadow-lg">
       <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-white/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
       <div className="relative mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-xs text-white backdrop-blur-sm">
@@ -34,7 +30,6 @@ export const CurrencyCardBase: React.FC<CurrencyCardBaseProps> = ({
         </div>
         <TrendingUp className="h-5 w-5 text-emerald-200 opacity-75" />
       </div>
-
       <div className="relative mb-4">
         <p className="mb-1 text-xs text-white/70">Total</p>
         <p
@@ -47,7 +42,6 @@ export const CurrencyCardBase: React.FC<CurrencyCardBaseProps> = ({
             : "••••••••"}
         </p>
       </div>
-
       <div className="relative grid grid-cols-3 gap-3 border-t border-white/20 pt-4">
         <Breakdown
           label="Bank"
@@ -74,7 +68,6 @@ export const CurrencyCardBase: React.FC<CurrencyCardBaseProps> = ({
     </div>
   );
 };
-
 function Breakdown({
   label,
   value,

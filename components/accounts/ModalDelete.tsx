@@ -31,10 +31,14 @@ const ModalDelete = ({ open, onClose, onDelete }: ModalDeleteProps) => {
               melanjutkan?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+          <AlertDialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <AlertDialogCancel className="w-full sm:w-auto">
+              Batal
+            </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button onClick={onDelete}>Hapus</Button>
+              <Button onClick={onDelete} className="w-full sm:w-auto">
+                Hapus
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

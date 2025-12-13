@@ -124,8 +124,6 @@ export function calculateAccountTotalsByCurrency(
     else if (acc.type === "e-wallet") s.totalEWalletBalance += balance;
     else if (acc.type === "cash") s.totalCashBalance += balance;
   }
-
-  // optional: urutkan, IDR dulu
   return Array.from(map.values()).sort((a, b) =>
     a.currency === "IDR"
       ? -1
@@ -143,7 +141,6 @@ export const createInitialAccountForm = (): AddAccountFormData => ({
 });
 
 export const CURRENCIES = [
-  // Asia
   { code: "IDR", label: "Rupiah (IDR)", symbol: "Rp" },
   { code: "SGD", label: "Singapore Dollar (SGD)", symbol: "S$" },
   { code: "MYR", label: "Malaysian Ringgit (MYR)", symbol: "RM" },
@@ -154,30 +151,20 @@ export const CURRENCIES = [
   { code: "CNY", label: "Chinese Yuan (CNY)", symbol: "¥" },
   { code: "KRW", label: "South Korean Won (KRW)", symbol: "₩" },
   { code: "INR", label: "Indian Rupee (INR)", symbol: "₹" },
-
-  // America
   { code: "USD", label: "US Dollar (USD)", symbol: "$" },
   { code: "CAD", label: "Canadian Dollar (CAD)", symbol: "C$" },
   { code: "BRL", label: "Brazilian Real (BRL)", symbol: "R$" },
   { code: "MXN", label: "Mexican Peso (MXN)", symbol: "$" },
-
-  // Europe
   { code: "EUR", label: "Euro (EUR)", symbol: "€" },
   { code: "GBP", label: "British Pound (GBP)", symbol: "£" },
   { code: "CHF", label: "Swiss Franc (CHF)", symbol: "CHF" },
   { code: "SEK", label: "Swedish Krona (SEK)", symbol: "kr" },
   { code: "NOK", label: "Norwegian Krone (NOK)", symbol: "kr" },
   { code: "DKK", label: "Danish Krone (DKK)", symbol: "kr" },
-
-  // Middle East
   { code: "SAR", label: "Saudi Riyal (SAR)", symbol: "﷼" },
   { code: "AED", label: "UAE Dirham (AED)", symbol: "د.إ" },
-
-  // Oceania
   { code: "AUD", label: "Australian Dollar (AUD)", symbol: "A$" },
   { code: "NZD", label: "New Zealand Dollar (NZD)", symbol: "NZ$" },
-
-  // Africa
   { code: "ZAR", label: "South African Rand (ZAR)", symbol: "R" },
 ];
 

@@ -1,12 +1,8 @@
 "use client";
 import React, { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  AuthLoginPayload,
-  AuthRegisterPayload,
-  AuthTokenResponse,
-} from "@/lib/types";
-import { post, setAccessToken } from "@/lib/axios";
+import { AuthLoginPayload, AuthRegisterPayload } from "@/lib/types";
+import { post } from "@/lib/axios";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import DialogRegister from "../DialogRegister";
 import DialogForgetPwd from "../DialogForgetPwd";
@@ -49,10 +45,10 @@ const Login = () => {
     },
     [searchParams, router]
   );
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     startLoading();
+    setErrorMessage("");
     try {
       if (isLogin) {
         const payload: AuthLoginPayload = {
@@ -60,43 +56,33 @@ const Login = () => {
           password: formData.password,
           remember_me: remember,
         };
-        const res = await post<AuthTokenResponse, AuthLoginPayload>(
-          "/auth/login",
-          payload
-        );
-        setAccessToken(res.access_token);
+        await post<{ ok: boolean }, AuthLoginPayload>("/auth/login", payload);
         router.push("/dashboard");
-      } else {
-        const payload: AuthRegisterPayload = { ...formData };
-        if (payload.password !== formData.confirmPassword) {
-          setErrorMessage("Password dan konfirmasi password tidak sesuai");
-          stopLoading();
-          return;
-        } else if (payload.password.length < 6) {
-          setErrorMessage("Password minimal 6 karakter");
-          stopLoading();
-          return;
-        }
-        await post<AuthTokenResponse, AuthRegisterPayload>(
-          "/auth/register",
-          payload
-        );
-        setRegisteredEmail(payload.email);
-        setMode("login");
-        setOpen(true);
+        return;
       }
+      const payload: AuthRegisterPayload = { ...formData };
+      if (payload.password !== formData.confirmPassword) {
+        setErrorMessage("Password dan konfirmasi password tidak sesuai");
+        return;
+      }
+      if (payload.password.length < 6) {
+        setErrorMessage("Password minimal 6 karakter");
+        return;
+      }
+      await post("/auth/register", payload);
+      setRegisteredEmail(payload.email);
+      setMode("login");
+      setOpen(true);
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        toastError(err.response.data?.error ?? "Login gagal");
+      if (axios.isAxiosError(err)) {
+        toastError(err.response?.data?.error ?? "Login gagal");
       } else {
         toast.error("Terjadi kesalahan. Silakan coba lagi.");
       }
-      stopLoading();
     } finally {
       stopLoading();
     }
   };
-
   return (
     <>
       <DialogForgetPwd
@@ -109,36 +95,37 @@ const Login = () => {
         onClose={() => setOpen(false)}
         onGoToLogin={() => setMode("login")}
       />
-      <div className="flex min-h-screen bg-white dark:bg-zinc-950 transition-colors">
-        <div className="flex w-full flex-col justify-center px-6 py-10 lg:w-1/2 lg:px-16">
-          <div className="mx-auto w-full max-w-md">
-            <BackLink />
-            <BrandHeader />
-            <IntroText isLogin={isLogin} />
-            <AuthForm
-              isLogin={isLogin}
-              formData={formData}
-              setFormData={setFormData}
-              showPassword={showPassword}
-              setShowPassword={setShowPassword}
-              isLoading={isLoading}
-              onSubmit={handleSubmit}
-              onForgotPassword={() => setShowForgetPassword(true)}
-              errorMessage={errorMessage}
-              remember={remember}
-              setRemember={setRemember}
-            />
-            <SectionDivider />
-            <SocialLoginButtons remember={remember} />
-            <AuthToggle
-              isLogin={isLogin}
-              onToggle={() => setMode(isLogin ? "register" : "login")}
-            />
+      <div className="min-h-dvh bg-white dark:bg-zinc-950 transition-colors">
+        <div className="flex min-h-dvh w-full">
+          {/* LEFT: Auth */}
+          <div className="flex w-full flex-col justify-center px-4 sm:px-6 py-10 sm:py-6 lg:w-1/2 lg:px-16">
+            <div className="mx-auto w-full max-w-md">
+              <BackLink />
+              <BrandHeader />
+              <IntroText isLogin={isLogin} />
+              <AuthForm
+                isLogin={isLogin}
+                formData={formData}
+                setFormData={setFormData}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+                isLoading={isLoading}
+                onSubmit={handleSubmit}
+                onForgotPassword={() => setShowForgetPassword(true)}
+                errorMessage={errorMessage}
+                remember={remember}
+                setRemember={setRemember}
+              />
+              <SectionDivider />
+              <SocialLoginButtons remember={remember} />
+              <AuthToggle
+                isLogin={isLogin}
+                onToggle={() => setMode(isLogin ? "register" : "login")}
+              />
+            </div>
           </div>
+          <IllustrationPanel />
         </div>
-
-        {/* Right Side - Illustration */}
-        <IllustrationPanel />
       </div>
     </>
   );

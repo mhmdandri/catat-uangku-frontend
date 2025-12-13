@@ -3,8 +3,10 @@ import React from "react";
 const IllustrationPanel: React.FC = () => (
   <div className="hidden lg:flex lg:w-1/2 lg:items-center lg:justify-center lg:bg-linear-to-br lg:from-emerald-600 lg:to-emerald-800">
     <div className="max-w-md p-12 text-white">
-      <h3 className="mb-4 text-4xl">Kelola Keuangan dengan Lebih Baik</h3>
-      <p className="mb-8 text-xl text-emerald-100">
+      <h3 className="mb-4 text-3xl xl:text-4xl">
+        Kelola Keuangan dengan Lebih Baik
+      </h3>
+      <p className="mb-8 text-base xl:text-xl text-emerald-100">
         Bergabunglah dengan ribuan pengguna yang sudah merasakan kemudahan
         mengelola keuangan dengan catatUangku.
       </p>

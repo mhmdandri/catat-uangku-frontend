@@ -34,19 +34,23 @@ const AuthForm: React.FC<AuthFormProps> = ({
     <form onSubmit={onSubmit} className="space-y-4">
       {!isLogin && (
         <div>
-          <label className="mb-2 block text-sm text-gray-700 dark:text-zinc-200">
-            Username
+          <label
+            htmlFor="nama"
+            className="mb-2 block text-sm text-gray-700 dark:text-zinc-200"
+          >
+            Nama Pengguna
           </label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
             <input
+              id="nama"
               type="text"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 pl-10 pr-4 py-3 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
-              placeholder="Masukkan username"
+              placeholder="Masukkan nama pengguna"
               required
             />
           </div>
@@ -54,12 +58,16 @@ const AuthForm: React.FC<AuthFormProps> = ({
       )}
 
       <div>
-        <label className="mb-2 block text-sm text-gray-700 dark:text-zinc-200">
+        <label
+          htmlFor="mail"
+          className="mb-2 block text-sm text-gray-700 dark:text-zinc-200"
+        >
           Email
         </label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
           <input
+            id="mail"
             type="email"
             value={formData.email}
             onChange={(e) =>
@@ -73,12 +81,16 @@ const AuthForm: React.FC<AuthFormProps> = ({
       </div>
 
       <div>
-        <label className="mb-2 block text-sm text-gray-700 dark:text-zinc-200">
+        <label
+          htmlFor="password"
+          className="mb-2 block text-sm text-gray-700 dark:text-zinc-200"
+        >
           Password
         </label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
           <input
+            id="password"
             type={showPassword ? "text" : "password"}
             value={formData.password}
             onChange={(e) =>
@@ -104,12 +116,16 @@ const AuthForm: React.FC<AuthFormProps> = ({
 
       {!isLogin && (
         <div>
-          <label className="mb-2 block text-sm text-gray-700 dark:text-zinc-200">
+          <label
+            htmlFor="confirmPassword"
+            className="mb-2 block text-sm text-gray-700 dark:text-zinc-200"
+          >
             Konfirmasi Password
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-zinc-500" />
             <input
+              id="confirmPassword"
               type={showPassword ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={(e) =>
@@ -132,9 +148,10 @@ const AuthForm: React.FC<AuthFormProps> = ({
       )}
 
       {isLogin && (
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2">
+        <div className="flex justify-between gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <label id="rememberMe" className="flex items-center gap-2">
             <input
+              id="rememberMe"
               type="checkbox"
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
@@ -148,7 +165,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
             variant="link"
             type="button"
             onClick={onForgotPassword}
-            className="text-sm text-emerald-600 hover:text-emerald-700 hover:no-underline cursor-pointer"
+            className="h-auto p-0 text-left sm:text-right text-sm text-emerald-600 hover:text-emerald-700 hover:no-underline cursor-pointer"
           >
             Lupa password?
           </Button>

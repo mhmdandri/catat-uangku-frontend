@@ -35,41 +35,51 @@ export const AccountStats: React.FC<AccountStatsProps> = ({
     : null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg text-gray-900">Total Rekening</h3>
-          <CreditCard className="h-6 w-6 text-emerald-600" />
+    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+        <div className="mb-3 sm:mb-4 flex items-center justify-between">
+          <h3 className="text-base sm:text-lg text-foreground">
+            Total Rekening
+          </h3>
+          <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
         </div>
-        <p className="text-3xl text-gray-900">{accounts.length ?? "-"}</p>
-        <p className="mt-2 text-sm text-gray-500">Rekening aktif</p>
+        <p className="text-2xl sm:text-3xl text-foreground">
+          {accounts.length ?? "-"}
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Rekening aktif</p>
       </div>
-
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg text-gray-900">Rekening Terbanyak</h3>
-          <TrendingUp className="h-6 w-6 text-blue-600" />
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+        <div className="mb-3 sm:mb-4 flex items-center justify-between">
+          <h3 className="text-base sm:text-lg text-foreground">
+            Rekening Terbanyak
+          </h3>
+          <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
         </div>
-        <p className="text-2xl text-gray-900">{mostUsedAccount?.name || "-"}</p>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="text-2xl sm:text-3xl text-foreground">
+          {mostUsedAccount?.name || "-"}
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
           {hasAccounts
             ? `${getTxCount(mostUsedAccount!)} transaksi`
             : "Belum ada data transaksi"}
         </p>
       </div>
-
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg text-gray-900">Saldo Terbesar</h3>
-          <Wallet className="h-6 w-6 text-purple-600" />
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6 shadow-sm">
+        <div className="mb-3 sm:mb-4 flex items-center justify-between">
+          <h3 className="text-base sm:text-lg text-foreground">
+            Saldo Terbesar
+          </h3>
+          <Wallet className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
         </div>
-        <p className="text-2xl text-gray-900">
+        <p className="text-2xl sm:text-3xl text-foreground">
           {highestBalanceAccount?.name || "-"}
         </p>
-        <p className="mt-2 text-sm text-gray-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           {hasAccounts
             ? showBalances
-              ? `Rp ${(highestBalanceAccount?.balance ?? 0).toLocaleString("id-ID")}`
+              ? `Rp ${(highestBalanceAccount?.balance ?? 0).toLocaleString(
+                  "id-ID"
+                )}`
               : "Rp ••••••••"
             : "Belum ada saldo"}
         </p>

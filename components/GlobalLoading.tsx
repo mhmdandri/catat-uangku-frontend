@@ -17,9 +17,7 @@ function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
 
 export default function GlobalLoadingOverlay() {
   const isLoading = useLoadingStore((state) => state.isLoading);
-
   if (!isLoading) return null;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center ">
       <Spinner className="size-8" />
