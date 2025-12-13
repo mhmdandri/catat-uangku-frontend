@@ -1,8 +1,8 @@
-import type { LucideIcon } from "lucide-react";
-
 export type UUID = string;
 export type ISODateString = string;
 export type Nullable<T> = T | null;
+export type DataScope = "personal" | "group";
+export type AccountType = "bank" | "e-wallet" | "cash";
 
 /**
  * Auth
@@ -60,14 +60,31 @@ export type ProfileUpdatePayload = {
   age?: number;
 };
 
+export type AddAccountFormData = {
+  name: string;
+  type: AccountType;
+  number?: string;
+  currency?: string | null;
+  first_balance: number;
+};
+
+export type EditAccountPayload = {
+  name?: string;
+  type: AccountType;
+  number?: Nullable<string>;
+  currency?: string;
+  is_active?: boolean;
+};
+
 export type AccountPayload = {
   owner_user_id: UUID;
-  group_id?: UUID;
+  group_id?: Nullable<UUID>;
   name: string;
-  type: "bank" | "e-wallet" | "cash";
+  type: AccountType;
   first_balance: number;
+  number: Nullable<string>;
   currency: string;
-  scope: "personal" | "group";
+  scope: DataScope;
   is_shared: boolean;
   is_active: boolean;
 };
@@ -113,52 +130,63 @@ export type Preferences = {
     profilePublic: boolean;
   };
 };
-export type AccountType = "bank" | "e-wallet" | "cash";
 
 export type AccountResponse = {
-  id: string;
-  owner_user_id: string;
-  group_id: string;
+  id: UUID;
+  owner_user_id: UUID;
+  group_id?: Nullable<UUID>;
   name: string;
   type: AccountType;
-  first_balance: number;
-  balance: number;
-  currency: string;
-  scope: "personal" | "group";
+  first_balance?: Nullable<number>;
+  number?: Nullable<string>;
+  balance?: Nullable<number>;
+  currency?: Nullable<string>;
+  scope: DataScope;
   is_shared: boolean;
   is_active: boolean;
+  transaction_lines?: TransactionLine[];
 };
 
-export interface Account {
-  id: UUID;
-  name: string;
-  type: AccountType;
-  balance: number;
-  accountNumber: string;
-  icon: LucideIcon;
-  color: string;
-  transactions?: number;
-}
+export type Account = AccountResponse;
 
-export interface AccountTransaction {
+export type CurrencySummary = {
+  currency: string;
+  totalBalance: number;
+  totalBankBalance: number;
+  totalEWalletBalance: number;
+  totalCashBalance: number;
+};
+
+export type AccountTotals = {
+  totalBalance: number;
+  totalBankBalance: number;
+  totalEWalletBalance: number;
+  totalCashBalance: number;
+};
+
+export type AccountTransaction = {
   id: UUID;
   accountId: UUID;
   title: string;
   amount: number;
   type: TransactionType;
   date: ISODateString;
-}
+};
+
+export type AccountTransactionsMap = Record<UUID, AccountTransaction[]>;
+export type AccountTransactionsLoadingMap = Record<UUID, boolean>;
+export type AccountTransactionsErrorMap = Record<UUID, string | null>;
 
 export type Transaction = {
   id: UUID;
-  group_id: Nullable<UUID>;
+  group_id?: Nullable<UUID>;
   category_id: UUID;
   created_by_user_id: UUID;
   date: ISODateString;
   type: TransactionType;
-  total_amount: number;
-  scope: "personal" | "group";
-  description?: string;
+  total_amount?: Nullable<number>;
+  scope: DataScope;
+  description?: Nullable<string>;
   transaction_lines?: TransactionLine[];
 };
 export type TransactionType = "income" | "expense";

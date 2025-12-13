@@ -1,26 +1,37 @@
 import { CreditCard, TrendingUp, Wallet } from "lucide-react";
 import React from "react";
-import type { Account } from "@/lib/types";
+import type { Account, AccountTransactionsMap } from "@/lib/types";
 
 interface AccountStatsProps {
   accounts: Account[];
   showBalances: boolean;
+  transactionsByAccount: AccountTransactionsMap;
 }
 
 export const AccountStats: React.FC<AccountStatsProps> = ({
   accounts,
   showBalances,
+  transactionsByAccount,
 }) => {
   const hasAccounts = accounts.length > 0;
 
+  const getTxCount = (acc: Account) =>
+    transactionsByAccount[acc.id]?.length ?? acc.transaction_lines?.length ?? 0;
+
   const mostUsedAccount = hasAccounts
-    ? accounts.reduce((max, acc) =>
-        (acc.transactions ?? 0) > (max.transactions ?? 0) ? acc : max
-      )
+    ? accounts.reduce((max, acc) => {
+        const currentCount = getTxCount(acc);
+        const maxCount = getTxCount(max);
+        return currentCount > maxCount ? acc : max;
+      })
     : null;
 
   const highestBalanceAccount = hasAccounts
-    ? accounts.reduce((max, acc) => (acc.balance > max.balance ? acc : max))
+    ? accounts.reduce((max, acc) => {
+        const accBalance = acc.balance ?? 0;
+        const maxBalance = max.balance ?? 0;
+        return accBalance > maxBalance ? acc : max;
+      })
     : null;
 
   return (
@@ -42,7 +53,7 @@ export const AccountStats: React.FC<AccountStatsProps> = ({
         <p className="text-2xl text-gray-900">{mostUsedAccount?.name || "-"}</p>
         <p className="mt-2 text-sm text-gray-500">
           {hasAccounts
-            ? `${mostUsedAccount?.transactions ?? 0} transaksi`
+            ? `${getTxCount(mostUsedAccount!)} transaksi`
             : "Belum ada data transaksi"}
         </p>
       </div>
@@ -58,7 +69,7 @@ export const AccountStats: React.FC<AccountStatsProps> = ({
         <p className="mt-2 text-sm text-gray-500">
           {hasAccounts
             ? showBalances
-              ? `Rp ${highestBalanceAccount?.balance.toLocaleString("id-ID")}`
+              ? `Rp ${(highestBalanceAccount?.balance ?? 0).toLocaleString("id-ID")}`
               : "Rp ••••••••"
             : "Belum ada saldo"}
         </p>

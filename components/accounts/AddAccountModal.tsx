@@ -1,12 +1,7 @@
 import { X } from "lucide-react";
 import React from "react";
-import type { AccountType } from "@/lib/types";
-
-export interface AddAccountFormData {
-  accountName: string;
-  accountType: AccountType;
-  balance: string;
-}
+import type { AddAccountFormData, AccountType } from "@/lib/types";
+import { SelectCurrency } from "../SelectCurrency";
 
 interface AddAccountModalProps {
   open: boolean;
@@ -45,13 +40,25 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
             </label>
             <input
               type="text"
-              value={formData.accountName}
-              onChange={(e) =>
-                onChange({ ...formData, accountName: e.target.value })
-              }
+              value={formData.name}
+              onChange={(e) => onChange({ ...formData, name: e.target.value })}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="Contoh: BCA - Main"
               required
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm text-gray-700">
+              No Rekening
+            </label>
+            <input
+              type="text"
+              value={formData.number || ""}
+              onChange={(e) =>
+                onChange({ ...formData, number: e.target.value })
+              }
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              placeholder="4123-456-7890"
             />
           </div>
 
@@ -60,11 +67,11 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
               Tipe Rekening
             </label>
             <select
-              value={formData.accountType}
+              value={formData.type}
               onChange={(e) =>
                 onChange({
                   ...formData,
-                  accountType: e.target.value as typeof formData.accountType,
+                  type: e.target.value as AccountType,
                 })
               }
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
@@ -76,14 +83,36 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
           </div>
 
           <div>
+            <label
+              htmlFor="currency"
+              className="mb-2 block text-sm text-gray-700"
+            >
+              Mata Uang
+            </label>
+            <SelectCurrency
+              id="currency"
+              value={formData.currency || ""}
+              onChange={(value) =>
+                onChange({
+                  ...formData,
+                  currency: value,
+                })
+              }
+            />
+          </div>
+
+          <div>
             <label className="mb-2 block text-sm text-gray-700">
               Saldo Awal
             </label>
             <input
               type="number"
-              value={formData.balance}
+              value={formData.first_balance}
               onChange={(e) =>
-                onChange({ ...formData, balance: e.target.value })
+                onChange({
+                  ...formData,
+                  first_balance: parseFloat(e.target.value) || 0,
+                })
               }
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="0"
