@@ -4,12 +4,11 @@ import { usePathname } from "next/navigation";
 import { Plus, Bell, LucideIcon, Eye, EyeOff } from "lucide-react";
 import { User } from "@/lib/types";
 import { Skeleton } from "../../ui/skeleton";
-import { useState } from "react";
-import Modal from "../../Modal";
 import { Button } from "../../ui/button";
-import { useBalanceVisibilityStore } from "@/store/useBalanceVisibilityStore";
-import { useAccountModalStore } from "@/store/useAccountModalStore";
+import { useToggleStore } from "@/store/useToggleStore";
+import { useModalStore } from "@/store/useModalStore";
 import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
+import AddTransaction from "@/components/transactions/AddTransaction";
 
 interface NavbarProps {
   userData: User | null;
@@ -126,10 +125,12 @@ const variantClass: Record<ActionVariant, string> = {
 };
 
 export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
-  const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const { showBalances, toggleShowBalances } = useBalanceVisibilityStore();
-  const { openAddModal } = useAccountModalStore();
+  const { isOpen, openModal, closeModal } = useModalStore();
+  const { isActive, toggle } = useToggleStore();
   const pathname = usePathname();
+
+  const showBalances = isActive("balanceVisibility");
+  const toggleShowBalances = () => toggle("balanceVisibility");
 
   const initial = userData?.name ?? "?";
 
@@ -161,10 +162,10 @@ export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
   const handleActionClick = (actionId: string) => {
     switch (actionId) {
       case "add-transaction":
-        setOpenDeleteModal(true);
+        openModal("transaction");
         break;
       case "add-account":
-        openAddModal();
+        openModal("account");
         break;
       case "hide-balance":
         toggleShowBalances();
@@ -191,19 +192,12 @@ export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
 
   return (
     <>
-      <Modal
-        open={openDeleteModal}
-        onClose={() => setOpenDeleteModal(false)}
-        title="Contoh Action"
-        description="Ini contoh action dari navbar, ganti dengan modal yang kamu mau."
-        footer={
-          <Button variant="ghost" onClick={() => setOpenDeleteModal(false)}>
-            Tutup
-          </Button>
-        }
-      >
-        <p>Isi modal action di sini.</p>
-      </Modal>
+      <AddTransaction
+        open={isOpen("transaction")}
+        onClose={() => closeModal("transaction")}
+        setForm={() => {}}
+        onSubmit={() => {}}
+      />
       <header className="border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-start sm:items-center justify-between gap-3">
           <div className="min-w-0">

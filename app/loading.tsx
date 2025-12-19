@@ -1,5 +1,4 @@
 "use client";
-
 import { cn } from "@/lib/utils";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { LoaderIcon } from "lucide-react";
@@ -15,7 +14,7 @@ function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   );
 }
 
-export default function GlobalLoadingOverlay() {
+export default function Loading() {
   const isLoading = useLoadingStore((state) => state.isLoading);
   if (!isLoading) return null;
   return (

@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-const BACKEND_BASE = process.env.NEXT_PUBLIC_API_URL!;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
@@ -14,11 +14,6 @@ export class ServerApiError extends Error {
     this.status = status;
     this.data = data;
   }
-}
-
-async function getAccessToken() {
-  const cookieStore = await cookies();
-  return cookieStore.get("access_token")?.value ?? null;
 }
 
 async function parseError(res: Response) {
@@ -34,9 +29,9 @@ async function parseError(res: Response) {
   throw new ServerApiError(res.status, String(msg), data);
 }
 
-async function refresh() {
+async function buildCookieHeader() {
   const cookieStore = await cookies();
-  const cookieHeader = cookieStore
+  return cookieStore
     .getAll()
     .map((c) => {
       const raw = c.value;
@@ -49,26 +44,19 @@ async function refresh() {
       return `${c.name}=${val}`;
     })
     .join("; ");
-
-  const res = await fetch(`${APP_URL}/api/auth/refresh`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieHeader,
-    },
-    cache: "no-store",
-  });
-
-  return res.ok;
 }
 
 async function doFetch(method: HttpMethod, path: string, body?: unknown) {
-  const token = await getAccessToken();
-  return fetch(`${BACKEND_BASE}${path}`, {
+  const cookieHeader = await buildCookieHeader();
+  const targetPath = path.startsWith("/api/")
+    ? path
+    : `/api${path.startsWith("/") ? path : `/${path}`}`;
+
+  return fetch(`${APP_URL}${targetPath}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
@@ -80,13 +68,10 @@ async function serverRequest<T>(
   path: string,
   body?: unknown
 ) {
-  let res = await doFetch(method, path, body);
+  const res = await doFetch(method, path, body);
 
   if (res.status === 401) {
-    const ok = await refresh();
-    if (ok) {
-      res = await doFetch(method, path, body);
-    }
+    redirect("/auth");
   }
 
   if (!res.ok) await parseError(res);

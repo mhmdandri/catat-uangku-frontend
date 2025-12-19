@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AccountSummary } from "@/components/accounts/AccountSummary";
 import { AccountCard } from "@/components/accounts/AccountCard";
-import { useBalanceVisibilityStore } from "@/store/useBalanceVisibilityStore";
+import { useToggleStore } from "@/store/useToggleStore";
 import {
   calculateAccountTotalsByCurrency,
   createAccountPayload,
@@ -27,16 +27,19 @@ import { useUser } from "../providers/UserProvider";
 import axios from "axios";
 import { AccountStats } from "./AccountStats";
 import { AddAccountModal } from "./AddAccountModal";
-import { useAccountModalStore } from "@/store/useAccountModalStore";
+import { useModalStore } from "@/store/useModalStore";
 import { toastError, toastSuccess } from "@/lib/toast";
 import ModalDelete from "./ModalDelete";
 import SheetEdit from "./SheetEdit";
 import { AccountSummarySkeleton } from "./AccountSkeleton";
+import { EmptyPage } from "../EmptyPage";
 
 const AccountPage: React.FC = () => {
   const { user, isLoading: isUserLoading } = useUser();
-  const { showBalances } = useBalanceVisibilityStore();
-  const { isAddModalOpen, closeAddModal } = useAccountModalStore();
+  const showBalances = useToggleStore((state) =>
+    state.isActive("balanceVisibility")
+  );
+  const { isOpen, closeModal } = useModalStore();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -177,7 +180,7 @@ const AccountPage: React.FC = () => {
         toastSuccess("Akun berhasil ditambahkan");
         setAccounts(refreshed.data ?? []);
         setFormData(createInitialAccountForm());
-        closeAddModal();
+        closeModal("account");
       } catch (error) {
         if (axios.isAxiosError(error)) {
           const message =
@@ -193,7 +196,7 @@ const AccountPage: React.FC = () => {
         setIsLoadingAccounts(false);
       }
     },
-    [closeAddModal, formData, user?.id]
+    [formData, user?.id, closeModal]
   );
   const handleConfirmDelete = (accountId: UUID) => {
     setShowModalDelete(true);
@@ -272,6 +275,7 @@ const AccountPage: React.FC = () => {
     [accounts]
   );
   const isLoading = isLoadingAccounts || isUserLoading;
+  const { openModal } = useModalStore();
   return (
     <>
       {showEditForm && (
@@ -323,8 +327,13 @@ const AccountPage: React.FC = () => {
             </div>
           ))}
         {!isLoadingAccounts && accounts.length === 0 && (
-          <div className="col-span-full rounded-xl border border-dashed border-border bg-card p-4 sm:p-6 text-center text-sm text-muted-foreground">
-            Belum ada akun. Tambahkan akun baru dari tombol di kanan atas.
+          <div className="col-span-full rounded-xl bg-card border border-gray-100 text-center text-sm">
+            <EmptyPage
+              btnText="Tambah Akun"
+              title="Belum ada akun"
+              description="Kamu belum punya akun. Mulai buat akun dengan tekan tombol dibawah atau dikanan atas"
+              onClick={() => openModal("account")}
+            />
           </div>
         )}
         {!isLoadingAccounts &&
@@ -367,9 +376,9 @@ const AccountPage: React.FC = () => {
         />
       )}
       <AddAccountModal
-        open={isAddModalOpen}
+        open={isOpen("account")}
         formData={formData}
-        onClose={closeAddModal}
+        onClose={() => closeModal("account")}
         onChange={setFormData}
         onSubmit={handleAddAccount}
       />

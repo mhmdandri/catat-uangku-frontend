@@ -7,16 +7,7 @@ const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || undefined;
 
 export async function POST() {
   const cookieStore = await cookies();
-  const rtRaw = cookieStore.get("refresh_token")?.value;
-  const rt = rtRaw
-    ? (() => {
-        try {
-          return decodeURIComponent(rtRaw);
-        } catch {
-          return rtRaw;
-        }
-      })()
-    : null;
+  const rt = cookieStore.get("refresh_token")?.value;
 
   if (rt) {
     await fetch(`${BACKEND_BASE}/auth/logout`, {

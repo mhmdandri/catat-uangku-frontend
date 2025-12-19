@@ -60,22 +60,22 @@ export function DashboardClient({ children }: { children: ReactNode }) {
   }, [startLoading, stopLoading, redirectToLogin]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
-      <Sidebar userData={user} onLogout={handleLogout} isLoading={isLoading} />
+    <UserProvider value={{ user, isLoading, setUser }}>
+      <div className="flex h-screen overflow-hidden bg-background text-foreground">
+        <Sidebar userData={user} onLogout={handleLogout} isLoading={isLoading} />
 
-      <main className="flex flex-1 flex-col overflow-hidden">
-        <Navbar userData={user} isLoading={isLoading} onLogout={handleLogout} />
+        <main className="flex flex-1 flex-col overflow-hidden">
+          <Navbar userData={user} isLoading={isLoading} onLogout={handleLogout} />
 
-        <UserProvider value={{ user, isLoading, setUser }}>
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
             {children}
           </div>
-        </UserProvider>
 
-        {/* Mobile view components */}
-        <FloatingButton />
-        <BottomTabs />
-      </main>
-    </div>
+          {/* Mobile view components */}
+          <FloatingButton />
+          <BottomTabs />
+        </main>
+      </div>
+    </UserProvider>
   );
 }

@@ -9,35 +9,18 @@ export const api = axios.create({
 type RetryableConfig = AxiosRequestConfig & { __isRetry?: boolean };
 type RequestConfig = Omit<RetryableConfig, "url" | "method" | "data">;
 
-let refreshPromise: Promise<void> | null = null;
-const refreshAccessToken = () => {
-  if (!refreshPromise) {
-    refreshPromise = api
-      .post("/auth/refresh")
-      .then(() => {})
-      .finally(() => {
-        refreshPromise = null;
-      });
-  }
-  return refreshPromise;
-};
-
+// Removed automatic refresh interceptor to avoid race conditions
+// Server-side proxy.ts handles refresh automatically
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const status = error.response?.status;
-    const config = error.config as RetryableConfig | undefined;
-    const isRefreshCall = config?.url?.includes("/auth/refresh");
 
-    if (status === 401 && config && !config.__isRetry && !isRefreshCall) {
-      config.__isRetry = true;
-      try {
-        await refreshAccessToken();
-        return api.request(config);
-      } catch (refreshErr) {
-        return Promise.reject(refreshErr);
-      }
+    // If unauthorized, redirect to login
+    if (status === 401) {
+      window.location.href = "/auth";
     }
+
     return Promise.reject(error);
   }
 );

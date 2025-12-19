@@ -14,6 +14,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { SelectCurrency } from "../SelectCurrency";
+import { useDeviceStore } from "@/store/useDeviceStore";
 
 interface SheetEditProps {
   open: boolean;
@@ -29,10 +30,14 @@ const SheetEdit = ({
   setEditForm,
   onSave,
 }: SheetEditProps) => {
+  const { isMobile } = useDeviceStore();
   return (
     <>
       <Sheet open={open} onOpenChange={onClose}>
-        <SheetContent className="px-3 sm:px-6">
+        <SheetContent
+          className="px-3 sm:px-6"
+          side={isMobile ? "bottom" : "right"}
+        >
           <SheetHeader className="pb-6">
             <SheetTitle>Edit account</SheetTitle>
             <SheetDescription>

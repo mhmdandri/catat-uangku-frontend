@@ -7,7 +7,7 @@ const USE_SECURE = process.env.NEXT_PUBLIC_USE_SECURE_COOKIE === "true";
 const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || undefined;
 
 const ACCESS_MAX_AGE = 15 * 60;
-const REFRESH_MAX_AGE = 7 * 24 * 60 * 60;
+//const REFRESH_MAX_AGE = 7 * 24 * 60 * 60;
 
 type CookieMutation = {
   name: string;
@@ -31,14 +31,14 @@ const getCookieFromHeader = (cookieHeader: string, name: string) => {
   return match?.[1] ?? null;
 };
 
-const decodeCookieValue = (val: string | null | undefined) => {
-  if (!val) return null;
-  try {
-    return decodeURIComponent(val);
-  } catch {
-    return val;
-  }
-};
+// const decodeCookieValue = (val: string | null | undefined) => {
+//   if (!val) return null;
+//   try {
+//     return decodeURIComponent(val);
+//   } catch {
+//     return val;
+//   }
+// };
 
 const getCookieValue = (req: NextRequest, cookieHeader: string, name: string) =>
   req.cookies.get(name)?.value ?? getCookieFromHeader(cookieHeader, name);
@@ -64,10 +64,10 @@ const clearTokenCookie = (name: string): CookieMutation => ({
   options: { ...baseCookieOptions, maxAge: 0 },
 });
 
-const extractCookie = (setCookieHeader: string, name: string) => {
-  const m = setCookieHeader.match(new RegExp(`${name}=([^;]+)`));
-  return m?.[1] ?? null;
-};
+// const extractCookie = (setCookieHeader: string, name: string) => {
+//   const m = setCookieHeader.match(new RegExp(`${name}=([^;]+)`));
+//   return m?.[1] ?? null;
+// };
 
 const getSetCookieHeaders = (headers: Headers) => {
   const h = headers as Headers & { getSetCookie?: () => string[] };
@@ -100,7 +100,7 @@ async function refreshTokens(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `refresh_token=${decodeCookieValue(refreshToken)}`,
+      Cookie: `refresh_token=${refreshToken}`,
     },
     cache: "no-store",
   });
@@ -119,10 +119,7 @@ async function refreshTokens(
     };
   }
 
-  const setCookieHeader = getSetCookieHeaders(res.headers).join(",");
-  const rotatedRefresh =
-    extractCookie(setCookieHeader, "refresh_token") ?? refreshToken;
-
+  // Refresh token TIDAK di-rotate, jadi hanya set access token baru
   const cookiesToSet: CookieMutation[] = [
     {
       name: "access_token",
@@ -130,14 +127,6 @@ async function refreshTokens(
       options: tokenCookie(ACCESS_MAX_AGE),
     },
   ];
-
-  if (rotatedRefresh) {
-    cookiesToSet.push({
-      name: "refresh_token",
-      value: rotatedRefresh,
-      options: tokenCookie(REFRESH_MAX_AGE),
-    });
-  }
 
   return { ok: true, accessToken: data.access_token, cookies: cookiesToSet };
 }

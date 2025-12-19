@@ -50,8 +50,7 @@ export const mapTransactionResponses = (
       id: item.id,
       accountId,
       title:
-        item.description ||
-        (item.type === "income" ? "Pemasukan" : "Pengeluaran"),
+        item.title || (item.type === "income" ? "Pemasukan" : "Pengeluaran"),
       amount: signedAmount,
       type: item.type,
       date: item.date,

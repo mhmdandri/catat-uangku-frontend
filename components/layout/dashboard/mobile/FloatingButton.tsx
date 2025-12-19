@@ -2,18 +2,26 @@
 
 import { Plus } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useAccountModalStore } from "@/store/useAccountModalStore";
+import { useModalStore } from "@/store/useModalStore";
+import { useDeviceStore } from "@/store/useDeviceStore";
 
 export function FloatingButton() {
   const pathname = usePathname();
-  const { openAddModal } = useAccountModalStore();
+  const { openModal } = useModalStore();
+  const isMobile = useDeviceStore((state) => state.isMobile);
 
   const handleClick = () => {
     if (pathname.startsWith("/dashboard/accounts")) {
-      openAddModal();
+      openModal("account");
       return;
     }
-    console.log("TODO: buka modal tambah transaksi");
+    if (
+      pathname.startsWith("/dashboard/transactions") ||
+      pathname === "/dashboard"
+    ) {
+      openModal("transaction");
+      return;
+    }
   };
   const showFab =
     pathname === "/dashboard" ||
@@ -22,12 +30,14 @@ export function FloatingButton() {
     pathname.startsWith("/dashboard/goals") ||
     pathname.startsWith("/dashboard/groups");
 
-  if (!showFab) return null;
+  // Only show on mobile devices
+  if (!showFab || !isMobile) return null;
+
   return (
     <button
       onClick={handleClick}
       aria-label="Tambah"
-      className="lg:hidden fixed right-4 bottom-20 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-700 active:scale-95"
+      className="fixed right-4 bottom-20 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-700 active:scale-95"
     >
       <Plus className="h-6 w-6" />
     </button>

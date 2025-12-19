@@ -13,6 +13,7 @@ import { useLoadingStore } from "@/store/useLoadingStore";
 import { toastError, toastSuccess } from "@/lib/toast";
 import axios from "axios";
 import ProfileSkeleton from "./ProfileSkeleton";
+import { useTheme } from "next-themes";
 
 export type ActiveTab = "profile" | "security" | "preferences";
 const ProfilePage = () => {
@@ -24,6 +25,7 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const { theme, setTheme } = useTheme();
   const [profileFormData, setProfileFormData] = useState<ProfileUpdatePayload>({
     first_name: "",
     last_name: "",
@@ -55,6 +57,7 @@ const ProfilePage = () => {
   const [preferences, setPreferences] = useState<Preferences>({
     currency: "IDR",
     language: "id",
+    theme: "system",
     notifications: {
       email: true,
       push: true,
@@ -172,6 +175,9 @@ const ProfilePage = () => {
     key: string,
     value: unknown
   ) => {
+    if (category === "theme" && typeof value === "string") {
+      setTheme(value);
+    }
     setPreferences((prev) => ({
       ...prev,
       [category]: {
@@ -180,6 +186,14 @@ const ProfilePage = () => {
       },
     }));
   };
+  useEffect(() => {
+    if (theme) {
+      setPreferences((prev) => ({
+        ...prev,
+        theme: theme as "light" | "dark" | "system",
+      }));
+    }
+  }, [theme]);
 
   return (
     <>

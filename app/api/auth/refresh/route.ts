@@ -5,29 +5,23 @@ const BACKEND_BASE = process.env.NEXT_PUBLIC_API_URL!;
 const USE_SECURE = process.env.NEXT_PUBLIC_USE_SECURE_COOKIE === "true";
 const COOKIE_DOMAIN = process.env.NEXT_PUBLIC_COOKIE_DOMAIN || undefined;
 
-export async function POST() {
+export async function POST(request: Request) {
   const cookieStore = await cookies();
   const rtRaw = cookieStore.get("refresh_token")?.value;
-  const rt = rtRaw
-    ? (() => {
-        try {
-          return decodeURIComponent(rtRaw);
-        } catch {
-          return rtRaw;
-        }
-      })()
-    : null;
-  if (!rt) {
+
+  if (!rtRaw) {
     return NextResponse.json(
       { error: "refresh token tidak ada" },
       { status: 401 }
     );
   }
+
+  // Jangan decode - kirim langsung seperti yang ada di cookie
   const res = await fetch(`${BACKEND_BASE}/auth/refresh`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Cookie: `refresh_token=${rt}`,
+      Cookie: `refresh_token=${rtRaw}`,
     },
     cache: "no-store",
   });
@@ -65,34 +59,11 @@ export async function POST() {
     path: "/",
     maxAge: 15 * 60,
   });
-  const setCookies =
-    (
-      res.headers as Headers & { getSetCookie?: () => string[] }
-    ).getSetCookie?.() ??
-    (res.headers.get("set-cookie")
-      ? [res.headers.get("set-cookie") as string]
-      : []);
-  const refreshSetCookie = setCookies.find((c) =>
-    c.toLowerCase().includes("refresh_token=")
+
+  // Refresh token TIDAK berubah (no rotation), tidak perlu di-set ulang
+  console.log(
+    "DEBUG [refresh/route.ts]: Access token baru di-set, refresh token tetap sama"
   );
-
-  if (refreshSetCookie) {
-    const m = refreshSetCookie.match(/refresh_token=([^;]+)/);
-    const maxAgeMatch = refreshSetCookie.match(/(?:^|;)\s*max-age=(\d+)/i);
-    const newRt = m?.[1];
-    const maxAgeSeconds = maxAgeMatch ? Number(maxAgeMatch[1]) : 4 * 60 * 60;
-
-    if (newRt) {
-      out.cookies.set("refresh_token", newRt, {
-        httpOnly: true,
-        sameSite: USE_SECURE ? "none" : "lax",
-        secure: USE_SECURE,
-        path: "/",
-        domain: COOKIE_DOMAIN,
-        maxAge: maxAgeSeconds,
-      });
-    }
-  }
 
   return out;
 }

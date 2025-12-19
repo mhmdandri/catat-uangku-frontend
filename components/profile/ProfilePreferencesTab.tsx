@@ -1,6 +1,9 @@
 "use client";
 import type { Preferences } from "@/lib/types";
 import { Switch } from "@/components/ui/switch";
+import { SelectCurrency } from "../SelectCurrency";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
+import { Computer, Moon, Sun } from "lucide-react";
 type Props = {
   preferences: Preferences;
   onPreferenceChange: (
@@ -25,7 +28,13 @@ const ProfilePreferencesTab: React.FC<Props> = ({
                 Pilih mata uang default
               </p>
             </div>
-            <select
+            <div className="w-full sm:w-56 rounded-lg text-foreground px-3 py-2 text-sm">
+              <SelectCurrency
+                value={preferences.currency}
+                onChange={(value) => onPreferenceChange("currency", "", value)}
+              ></SelectCurrency>
+            </div>
+            {/* <select
               value={preferences.currency}
               onChange={(e) =>
                 onPreferenceChange("currency", "", e.target.value)
@@ -35,7 +44,7 @@ const ProfilePreferencesTab: React.FC<Props> = ({
               <option value="IDR">IDR - Rupiah</option>
               <option value="USD">USD - Dollar</option>
               <option value="EUR">EUR - Euro</option>
-            </select>
+            </select> */}
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -55,6 +64,47 @@ const ProfilePreferencesTab: React.FC<Props> = ({
               <option value="id">Indonesia</option>
               <option value="en">English</option>
             </select>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-foreground">Tema</p>
+              <p className="text-xs text-muted-foreground">
+                Pilih tema tampilan
+              </p>
+            </div>
+            <div>
+              <Tabs
+                value={preferences.theme}
+                className="w-full sm:w-auto px-3 py-2.5 sm:py-2"
+                onValueChange={(value) =>
+                  onPreferenceChange("theme", "", value)
+                }
+              >
+                <TabsList>
+                  <TabsTrigger value="system" className="flex gap-2">
+                    <Computer />
+                    System
+                  </TabsTrigger>
+                  <TabsTrigger value="light" className="flex gap-2">
+                    <Sun />
+                    Light
+                  </TabsTrigger>
+                  <TabsTrigger value="dark" className="flex gap-2">
+                    <Moon />
+                    Dark
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+            {/* <select
+              value={preferences.theme}
+              onChange={(e) => onPreferenceChange("theme", "", e.target.value)}
+              className="w-full sm:w-auto rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+            >
+              <option value="system">Sistem</option>
+              <option value="light">Terang</option>
+              <option value="dark">Gelap</option>
+            </select> */}
           </div>
         </div>
       </div>

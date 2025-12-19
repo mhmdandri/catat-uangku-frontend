@@ -54,32 +54,56 @@ export type ProfileUpdatePayload = {
   birthdate?: string;
   age?: number;
 };
-export type AddAccountFormData = {
-  name: string;
-  type: AccountType;
-  number?: string;
-  currency?: string | null;
-  first_balance: number;
+
+/**
+ * Transactions
+ */
+export type TransactionBase = {
+  group_id?: Nullable<UUID>;
+  category_id: UUID;
+  account_id: UUID;
+  date?: ISODateString;
+  title: string;
+  type: TransactionType;
+  total_amount?: Nullable<number>;
+  scope: DataScope;
+  description?: Nullable<string>;
 };
-export type EditAccountPayload = {
-  name?: string;
+export type TransactionPayload = TransactionBase & {
+  created_by_user_id: UUID;
+};
+export type Transaction = TransactionBase & {
+  id: UUID;
+  created_by_user_id: UUID;
+  category: Category;
+  transaction_lines?: TransactionLine[];
+};
+
+/**
+ * Accounts
+ */
+export type AccountBase = {
+  name: string;
   type: AccountType;
   number?: Nullable<string>;
-  currency?: string;
-  is_active?: boolean;
+  currency?: Nullable<string>;
+  scope: DataScope;
 };
-export type AccountPayload = {
+export type AccountPayload = AccountBase & {
   owner_user_id: UUID;
   group_id?: Nullable<UUID>;
-  name: string;
-  type: AccountType;
   first_balance: number;
-  number: Nullable<string>;
-  currency: string;
-  scope: DataScope;
   is_shared: boolean;
   is_active: boolean;
 };
+export type EditAccountPayload = Partial<AccountBase> & {
+  type: AccountType;
+  is_active?: boolean;
+};
+export type AddAccountFormData = Pick<
+  AccountPayload,
+  "name" | "type" | "number" | "currency" | "first_balance"
+>;
 /**
  * User & Groups
  */
@@ -107,6 +131,7 @@ export type User = {
 export type Preferences = {
   currency: string;
   language: string;
+  theme: "light" | "dark" | "system";
   notifications: {
     email: boolean;
     push: boolean;
@@ -118,17 +143,12 @@ export type Preferences = {
     profilePublic: boolean;
   };
 };
-export type AccountResponse = {
+export type AccountResponse = AccountBase & {
   id: UUID;
   owner_user_id: UUID;
   group_id?: Nullable<UUID>;
-  name: string;
-  type: AccountType;
   first_balance?: Nullable<number>;
-  number?: Nullable<string>;
   balance?: Nullable<number>;
-  currency?: Nullable<string>;
-  scope: DataScope;
   is_shared: boolean;
   is_active: boolean;
   transaction_lines?: TransactionLine[];
@@ -158,24 +178,24 @@ export type AccountTransaction = {
 export type AccountTransactionsMap = Record<UUID, AccountTransaction[]>;
 export type AccountTransactionsLoadingMap = Record<UUID, boolean>;
 export type AccountTransactionsErrorMap = Record<UUID, string | null>;
-export type Transaction = {
-  id: UUID;
-  group_id?: Nullable<UUID>;
-  category_id: UUID;
-  created_by_user_id: UUID;
-  date: ISODateString;
-  type: TransactionType;
-  total_amount?: Nullable<number>;
-  scope: DataScope;
-  description?: Nullable<string>;
-  transaction_lines?: TransactionLine[];
-};
 export type TransactionType = "income" | "expense";
+export type TransactionTypeFilter = "all" | TransactionType;
 export interface TransactionLine {
   id: UUID;
   transaction_id: UUID;
   account_id: UUID;
+  account_name: string;
   debit: number;
   credit: number;
   note: string;
 }
+
+export type Category = {
+  id: UUID;
+  group_id?: Nullable<UUID>;
+  owner_user_id: UUID;
+  name: string;
+  type: TransactionType;
+  color?: Nullable<string>;
+  icon?: Nullable<string>;
+};
