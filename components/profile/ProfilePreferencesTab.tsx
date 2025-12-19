@@ -1,9 +1,9 @@
 "use client";
-import type { Preferences } from "@/lib/types";
 import { Switch } from "@/components/ui/switch";
 import { SelectCurrency } from "../SelectCurrency";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Computer, Moon, Sun } from "lucide-react";
+import { Preferences } from "@/lib/types/profile";
 type Props = {
   preferences: Preferences;
   onPreferenceChange: (

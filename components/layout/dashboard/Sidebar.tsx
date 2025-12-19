@@ -11,9 +11,9 @@ import {
   Users,
 } from "lucide-react";
 import clsx from "clsx";
-import { User } from "@/lib/types";
 import { Skeleton } from "../../ui/skeleton";
 import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
+import { User } from "@/lib/types/user";
 interface SidebarProps {
   userData: User | null;
   onLogout?: () => void;

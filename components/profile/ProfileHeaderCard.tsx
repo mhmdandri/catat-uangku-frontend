@@ -1,11 +1,13 @@
 "use client";
 import { Calendar, Camera, Edit } from "lucide-react";
-import { Account, Transaction, User } from "@/lib/types";
+import type { User } from "@/lib/types/user";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { get } from "@/lib/axios";
 import { differenceInMonths } from "date-fns";
+import { Transaction } from "@/lib/types/transaction";
+import { Account } from "@/lib/types/account";
 type Props = {
   userData: User;
   stats: {

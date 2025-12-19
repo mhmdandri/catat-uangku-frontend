@@ -1,13 +1,13 @@
 "use client";
 import React from "react";
-import { CurrencySummary } from "@/lib/types";
 import { ChevronLeft, ChevronRight, Sparkles, Wallet } from "lucide-react";
 import { CurrencyCardCarousel } from "./CurrencyCardCaraousel";
 import { useCarouselNav } from "./useCarouselNav";
 import { CurrencyCardGrid } from "./CurrencyCardGrid";
+import { Summary } from "@/lib/types/account";
 
 interface AccountSummaryProps {
-  summaries: CurrencySummary[];
+  summaries: Summary[];
   showBalances: boolean;
 }
 

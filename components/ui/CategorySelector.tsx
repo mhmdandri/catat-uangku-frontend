@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import CategoryIcon from "./CategoryIcon";
 import { ChevronDown } from "lucide-react";
-import { Category } from "@/lib/types";
+import type { Category } from "@/lib/types/category";
 
 interface CategorySelectorProps {
   categories: Category[];

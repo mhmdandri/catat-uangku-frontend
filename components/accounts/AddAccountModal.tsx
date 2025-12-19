@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import React from "react";
-import type { AddAccountFormData, AccountType } from "@/lib/types";
 import { SelectCurrency } from "../SelectCurrency";
+import { AddAccountFormData, AccountType } from "@/lib/types/account";
 
 interface AddAccountModalProps {
   open: boolean;
@@ -60,7 +60,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
             <input
               id="no"
               type="text"
-              value={formData.number || ""}
+              value={formData.number}
               onChange={(e) =>
                 onChange({ ...formData, number: e.target.value })
               }

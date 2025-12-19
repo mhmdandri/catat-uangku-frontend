@@ -17,7 +17,6 @@ const CategoryIcon: React.FC<CategoryIconProps> = ({
   className = "",
   showBackground = true,
 }) => {
-  // Get icon component from Lucide, fallback to Circle
   const IconComponent =
     (iconName &&
       (LucideIcons[iconName as keyof typeof LucideIcons] as LucideIcon)) ||

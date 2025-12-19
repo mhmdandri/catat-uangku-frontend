@@ -5,23 +5,23 @@ import React, { useMemo, useState, useEffect } from "react";
 import FilterCard from "@/components/transactions/FilterCard";
 import TransactionTable from "@/components/transactions/TransactionTable";
 import HeaderCards from "./HeaderCard";
-import { Transaction, TransactionTypeFilter } from "@/lib/types";
+import { Transaction, TransactionType } from "@/lib/types/transaction";
+import AddTransaction from "./AddTransaction";
+import { useModalStore } from "@/store/useModalStore";
 
 interface TransactionPageProps {
   data: Transaction[];
 }
 
 export default function TransactionPage({ data }: TransactionPageProps) {
-  const [filterType, setFilterType] = useState<TransactionTypeFilter>("all");
+  const { isOpen, closeModal } = useModalStore();
+  const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>(data);
-
-  // Keep local transactions in sync when new data comes from the server (e.g. after refresh)
   useEffect(() => {
     setTransactions(data);
   }, [data]);
-
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const matchesType = filterType === "all" || t.type === filterType;
@@ -29,7 +29,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
       const matchesSearch =
         q.length === 0 ||
         (t.description?.toLowerCase().includes(q) ?? false) ||
-        t.category_id.toLowerCase().includes(q);
+        t.category_id?.toLowerCase().includes(q);
       return matchesType && matchesSearch;
     });
   }, [transactions, filterType, searchQuery]);
@@ -48,6 +48,12 @@ export default function TransactionPage({ data }: TransactionPageProps) {
 
   return (
     <>
+      <AddTransaction
+        open={isOpen("transaction")}
+        onClose={() => closeModal("transaction")}
+        setForm={() => {}}
+        onSubmit={() => {}}
+      />
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-background p-6 text-foreground shadow-lg">
@@ -66,7 +72,6 @@ export default function TransactionPage({ data }: TransactionPageProps) {
           </div>
         </div>
       )}
-
       <main className="flex-1 overflow-y-auto">
         <div className="space-y-6">
           <HeaderCards

@@ -1,11 +1,12 @@
+import { Account } from "@/lib/types/account";
+import { Transaction } from "@/lib/types/transaction";
 import { CreditCard, TrendingUp, Wallet } from "lucide-react";
 import React from "react";
-import type { Account, AccountTransactionsMap } from "@/lib/types";
 
 interface AccountStatsProps {
   accounts: Account[];
   showBalances: boolean;
-  transactionsByAccount: AccountTransactionsMap;
+  transactionsByAccount: Record<string, Transaction[]>;
 }
 
 export const AccountStats: React.FC<AccountStatsProps> = ({

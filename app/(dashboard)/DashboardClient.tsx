@@ -4,11 +4,11 @@ import { Navbar } from "@/components/layout/dashboard/Navbar";
 import { Sidebar } from "@/components/layout/dashboard/Sidebar";
 import { BottomTabs } from "@/components/layout/dashboard/mobile/BottomTabs";
 import { get, post } from "@/lib/axios";
-import type { User } from "@/lib/types";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { useRouter } from "next/navigation";
 import { UserProvider } from "@/components/providers/UserProvider";
 import { FloatingButton } from "@/components/layout/dashboard/mobile/FloatingButton";
+import { User } from "@/lib/types/user";
 
 export function DashboardClient({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -62,16 +62,22 @@ export function DashboardClient({ children }: { children: ReactNode }) {
   return (
     <UserProvider value={{ user, isLoading, setUser }}>
       <div className="flex h-screen overflow-hidden bg-background text-foreground">
-        <Sidebar userData={user} onLogout={handleLogout} isLoading={isLoading} />
+        <Sidebar
+          userData={user}
+          onLogout={handleLogout}
+          isLoading={isLoading}
+        />
 
         <main className="flex flex-1 flex-col overflow-hidden">
-          <Navbar userData={user} isLoading={isLoading} onLogout={handleLogout} />
+          <Navbar
+            userData={user}
+            isLoading={isLoading}
+            onLogout={handleLogout}
+          />
 
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
             {children}
           </div>
-
-          {/* Mobile view components */}
           <FloatingButton />
           <BottomTabs />
         </main>

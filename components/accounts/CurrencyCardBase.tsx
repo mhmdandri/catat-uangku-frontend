@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
 import { TrendingUp } from "lucide-react";
-import { formatMoney, getCurrencySymbol } from "@/lib/account-helpers";
-import { CurrencySummary } from "@/lib/types";
+import { formatMoney, getCurrencySymbol } from "@/lib/accountHelpers";
+import { Summary } from "@/lib/types/account";
 interface CurrencyCardBaseProps {
-  summary: CurrencySummary;
+  summary: Summary;
   showBalances: boolean;
   isSingleCurrency: boolean;
 }

@@ -2,13 +2,13 @@
 
 import { usePathname } from "next/navigation";
 import { Plus, Bell, LucideIcon, Eye, EyeOff } from "lucide-react";
-import { User } from "@/lib/types";
 import { Skeleton } from "../../ui/skeleton";
 import { Button } from "../../ui/button";
 import { useToggleStore } from "@/store/useToggleStore";
 import { useModalStore } from "@/store/useModalStore";
 import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
-import AddTransaction from "@/components/transactions/AddTransaction";
+//import AddTransaction from "@/components/transactions/AddTransaction";
+import { User } from "@/lib/types/user";
 
 interface NavbarProps {
   userData: User | null;
@@ -125,7 +125,7 @@ const variantClass: Record<ActionVariant, string> = {
 };
 
 export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
-  const { isOpen, openModal, closeModal } = useModalStore();
+  const { openModal } = useModalStore();
   const { isActive, toggle } = useToggleStore();
   const pathname = usePathname();
 
@@ -192,12 +192,12 @@ export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
 
   return (
     <>
-      <AddTransaction
+      {/* <AddTransaction
         open={isOpen("transaction")}
         onClose={() => closeModal("transaction")}
         setForm={() => {}}
         onSubmit={() => {}}
-      />
+      /> */}
       <header className="border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-start sm:items-center justify-between gap-3">
           <div className="min-w-0">

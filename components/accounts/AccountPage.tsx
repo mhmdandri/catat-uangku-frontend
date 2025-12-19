@@ -7,22 +7,10 @@ import {
   calculateAccountTotalsByCurrency,
   createAccountPayload,
   createInitialAccountForm,
-  mapTransactionResponses,
   shouldFetchTransactions,
-} from "@/lib/account-helpers";
+} from "@/lib/accountHelpers";
 import { del, get, post, put } from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  AddAccountFormData,
-  EditAccountPayload,
-  type Account,
-  type AccountTransaction,
-  type AccountTransactionsErrorMap,
-  type AccountTransactionsLoadingMap,
-  type AccountTransactionsMap,
-  type Transaction,
-  type UUID,
-} from "@/lib/types";
 import { useUser } from "../providers/UserProvider";
 import axios from "axios";
 import { AccountStats } from "./AccountStats";
@@ -33,6 +21,8 @@ import ModalDelete from "./ModalDelete";
 import SheetEdit from "./SheetEdit";
 import { AccountSummarySkeleton } from "./AccountSkeleton";
 import { EmptyPage } from "../EmptyPage";
+import { Account, EditAccountPayload } from "@/lib/types/account";
+import { Transaction } from "@/lib/types/transaction";
 
 const AccountPage: React.FC = () => {
   const { user, isLoading: isUserLoading } = useUser();
@@ -43,26 +33,33 @@ const AccountPage: React.FC = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [selectedAccountId, setSelectedAccountId] = useState<UUID | null>(null);
-  const [selectedAccDeleteId, setSelectedAccDeleteId] = useState<UUID | null>(
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
   );
-  const [selectedAccEditId, setSelectedAccEditId] = useState<UUID | null>(null);
-  const [transactionsByAccount, setTransactionsByAccount] =
-    useState<AccountTransactionsMap>({});
-  const [transactionsLoading, setTransactionsLoading] =
-    useState<AccountTransactionsLoadingMap>({});
-  const [transactionsError, setTransactionsError] =
-    useState<AccountTransactionsErrorMap>({});
-  const [formData, setFormData] = useState<AddAccountFormData>(
-    createInitialAccountForm()
+  const [selectedAccDeleteId, setSelectedAccDeleteId] = useState<string | null>(
+    null
   );
+  const [selectedAccEditId, setSelectedAccEditId] = useState<string | null>(
+    null
+  );
+  const [transactionsByAccount, setTransactionsByAccount] = useState<
+    Record<string, Transaction[]>
+  >({});
+  const [transactionsLoading, setTransactionsLoading] = useState<
+    Record<string, boolean>
+  >({});
+  const [transactionsError, setTransactionsError] = useState<
+    Record<string, string | null>
+  >({});
+  const [formData, setFormData] = useState(createInitialAccountForm());
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [formEdit, setFormEdit] = useState<EditAccountPayload>({
     name: "",
     type: "bank",
-    number: "",
+    currency: "IDR",
+    number: null,
+    is_shared: false,
     is_active: true,
   });
   useEffect(() => {
@@ -95,7 +92,7 @@ const AccountPage: React.FC = () => {
     };
   }, [user?.id]);
   const loadTransactionsForAccount = useCallback(
-    async (accountId: UUID) => {
+    async (accountId: string) => {
       if (
         !shouldFetchTransactions(
           accountId,
@@ -111,8 +108,10 @@ const AccountPage: React.FC = () => {
         const res = await get<{ data: Transaction[] }>(
           `/transactions/account/${accountId}`
         );
-        const mapped = mapTransactionResponses(res.data, accountId);
-        setTransactionsByAccount((prev) => ({ ...prev, [accountId]: mapped }));
+        setTransactionsByAccount((prev) => ({
+          ...prev,
+          [accountId]: res.data ?? [],
+        }));
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 404) {
           setTransactionsByAccount((prev) => ({ ...prev, [accountId]: [] }));
@@ -149,10 +148,10 @@ const AccountPage: React.FC = () => {
     transactionsByAccount,
     transactionsLoading,
   ]);
-  const getAccountTransactions = (accountId: UUID): AccountTransaction[] =>
+  const getAccountTransactions = (accountId: string): Transaction[] =>
     transactionsByAccount[accountId] ?? [];
   const handleAccountSelect = useCallback(
-    (accountId: UUID) => {
+    (accountId: string) => {
       const nextSelected = selectedAccountId === accountId ? null : accountId;
       setSelectedAccountId(nextSelected);
       if (nextSelected) {
@@ -198,12 +197,12 @@ const AccountPage: React.FC = () => {
     },
     [formData, user?.id, closeModal]
   );
-  const handleConfirmDelete = (accountId: UUID) => {
+  const handleConfirmDelete = (accountId: string) => {
     setShowModalDelete(true);
     setSelectedAccDeleteId(accountId);
   };
   const handleDelete = useCallback(
-    async (accountId: UUID) => {
+    async (accountId: string) => {
       if (!user?.id) {
         toastError("Pengguna tidak ditemukan");
         return;
@@ -232,7 +231,7 @@ const AccountPage: React.FC = () => {
     },
     [user?.id]
   );
-  const handleShowEdit = (accountId: UUID) => {
+  const handleShowEdit = (accountId: string) => {
     setShowEditForm(true);
     setSelectedAccEditId(accountId);
     const account = accounts.find((acc) => acc.id === accountId);
@@ -240,8 +239,9 @@ const AccountPage: React.FC = () => {
       setFormEdit({
         name: account.name,
         type: account.type,
-        number: account.number ?? "",
+        number: account.number ?? null,
         currency: account.currency ?? "IDR",
+        is_shared: account.is_shared,
         is_active: account.is_active,
       });
     }
@@ -250,7 +250,7 @@ const AccountPage: React.FC = () => {
     setIsLoadingAccounts(true);
     setFetchError(null);
     try {
-      const res = await put<{ message: string; data: EditAccountPayload }>(
+      const res = await put<{ message: string; data: Account }>(
         `/accounts/${selectedAccEditId}`,
         formEdit
       );

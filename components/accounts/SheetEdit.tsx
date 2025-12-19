@@ -1,4 +1,3 @@
-import { AccountType, EditAccountPayload } from "@/lib/types";
 import React from "react";
 import {
   Sheet,
@@ -15,6 +14,7 @@ import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { SelectCurrency } from "../SelectCurrency";
 import { useDeviceStore } from "@/store/useDeviceStore";
+import { AccountType, EditAccountPayload } from "@/lib/types/account";
 
 interface SheetEditProps {
   open: boolean;
@@ -60,9 +60,12 @@ const SheetEdit = ({
               <Label htmlFor="no">No Rekening</Label>
               <Input
                 id="no"
-                value={editForm?.number || ""}
+                value={editForm.number ?? ""}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, number: e.target.value })
+                  setEditForm({
+                    ...editForm,
+                    number: e.target.value || null,
+                  })
                 }
               />
             </div>
@@ -88,7 +91,7 @@ const SheetEdit = ({
               <Label htmlFor="currency">Mata Uang</Label>
               <SelectCurrency
                 id="currency"
-                value={editForm.currency}
+                value={editForm.currency ?? ""}
                 onChange={(value: string) =>
                   setEditForm({
                     ...editForm,

@@ -9,10 +9,10 @@ import {
   TableRow,
 } from "../ui/table";
 import { Button } from "../ui/button";
-import { Transaction } from "@/lib/types";
 import CategoryIcon from "../ui/CategoryIcon";
 import { EmptyPage } from "../EmptyPage";
 import { useModalStore } from "@/store/useModalStore";
+import { Transaction } from "@/lib/types/transaction";
 
 type Props = {
   transactions?: Transaction[];

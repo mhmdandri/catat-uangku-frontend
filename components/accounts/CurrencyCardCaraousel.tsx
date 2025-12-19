@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { CurrencySummary } from "@/lib/types";
 import { CurrencyCardBase } from "./CurrencyCardBase";
+import { Summary } from "@/lib/types/account";
 
 interface CurrencyCardCarouselProps {
-  summary: CurrencySummary;
+  summary: Summary;
   showBalances: boolean;
   isSingleCurrency: boolean;
   slidesToShow: number;

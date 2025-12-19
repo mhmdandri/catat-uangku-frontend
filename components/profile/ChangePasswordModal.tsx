@@ -1,7 +1,7 @@
 "use client";
 import { put } from "@/lib/axios";
 import { toastError, toastSuccess } from "@/lib/toast";
-import { PasswordChangePayload } from "@/lib/types";
+import { PasswordChangePayload } from "@/lib/types/profile";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import axios from "axios";
 import { Eye, EyeOff, X } from "lucide-react";

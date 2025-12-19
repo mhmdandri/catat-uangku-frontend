@@ -1,7 +1,6 @@
 "use client";
 import React, { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AuthLoginPayload, AuthRegisterPayload } from "@/lib/types";
 import { post } from "@/lib/axios";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import DialogRegister from "../DialogRegister";
@@ -17,6 +16,7 @@ import SocialLoginButtons from "./SocialLoginButtons";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { toastError } from "@/lib/toast";
+import { LoginPayload, RegisterPayload } from "@/lib/types/auth";
 
 const Login = () => {
   const router = useRouter();
@@ -30,7 +30,7 @@ const Login = () => {
   const [showForgetPassword, setShowForgetPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [remember, setRemember] = useState(false);
-  const [formData, setFormData] = useState<AuthRegisterPayload>({
+  const [formData, setFormData] = useState<RegisterPayload>({
     email: "",
     password: "",
     name: "",
@@ -51,16 +51,16 @@ const Login = () => {
     setErrorMessage("");
     try {
       if (isLogin) {
-        const payload: AuthLoginPayload = {
+        const payload: LoginPayload = {
           email: formData.email,
           password: formData.password,
           remember_me: remember,
         };
-        await post<{ ok: boolean }, AuthLoginPayload>("/auth/login", payload);
+        await post<{ ok: boolean }, LoginPayload>("/auth/login", payload);
         router.push("/dashboard");
         return;
       }
-      const payload: AuthRegisterPayload = { ...formData };
+      const payload: RegisterPayload = { ...formData };
       if (payload.password !== formData.confirmPassword) {
         setErrorMessage("Password dan konfirmasi password tidak sesuai");
         return;
@@ -97,7 +97,6 @@ const Login = () => {
       />
       <div className="min-h-dvh bg-white dark:bg-zinc-950 transition-colors">
         <div className="flex min-h-dvh w-full">
-          {/* LEFT: Auth */}
           <div className="flex w-full flex-col justify-center px-4 sm:px-6 py-10 sm:py-6 lg:w-1/2 lg:px-16">
             <div className="mx-auto w-full max-w-md">
               <BackLink />

@@ -6,7 +6,7 @@
 import CategoryIcon from "@/components/ui/CategoryIcon";
 import CategorySelector from "@/components/ui/CategorySelector";
 import IconPicker from "@/components/ui/IconPicker";
-import { Transaction } from "@/lib/types";
+import type { Transaction } from "@/lib/types/transaction";
 import { useState } from "react";
 
 // 2. Contoh penggunaan CategoryIcon

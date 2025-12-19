@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { Category, TransactionType } from "@/lib/types";
+import type { Category } from "@/lib/types/category";
+import type { TransactionType } from "@/lib/types/transaction";
 import { Check, Plus, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 import CategoryIcon from "./ui/CategoryIcon";
 import { useDeviceStore } from "@/store/useDeviceStore";

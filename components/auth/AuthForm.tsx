@@ -1,12 +1,12 @@
 import React from "react";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import { Button } from "../ui/button";
-import { AuthRegisterPayload } from "@/lib/types";
+import { RegisterPayload } from "@/lib/types/auth";
 
 interface AuthFormProps {
   isLogin: boolean;
-  formData: AuthRegisterPayload;
-  setFormData: React.Dispatch<React.SetStateAction<AuthRegisterPayload>>;
+  formData: RegisterPayload;
+  setFormData: React.Dispatch<React.SetStateAction<RegisterPayload>>;
   showPassword: boolean;
   setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
   isLoading: boolean;

@@ -10,12 +10,13 @@ import {
   accountTypeStyles,
   buildAccountNumber,
   formatMoney,
-} from "@/lib/account-helpers";
-import type { Account, AccountTransaction } from "@/lib/types";
+} from "@/lib/accountHelpers";
+import { Account } from "@/lib/types/account";
+import { Transaction } from "@/lib/types/transaction";
 
 interface AccountCardProps {
   account: Account;
-  transactions: AccountTransaction[];
+  transactions: Transaction[];
   transactionsLoading?: boolean;
   transactionsError?: string | null;
   isSelected: boolean;
@@ -196,7 +197,9 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                     }`}
                   >
                     {transaction.type === "income" ? "+" : "-"} Rp{" "}
-                    {Math.abs(transaction.amount).toLocaleString("id-ID")}
+                    {Math.abs(transaction.total_amount ?? 0).toLocaleString(
+                      "id-ID"
+                    )}
                   </p>
                 </div>
               ))

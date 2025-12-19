@@ -29,10 +29,7 @@ export function FloatingButton() {
     pathname.startsWith("/dashboard/accounts") ||
     pathname.startsWith("/dashboard/goals") ||
     pathname.startsWith("/dashboard/groups");
-
-  // Only show on mobile devices
   if (!showFab || !isMobile) return null;
-
   return (
     <button
       onClick={handleClick}

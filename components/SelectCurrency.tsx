@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CURRENCIES } from "@/lib/account-helpers";
+import { CURRENCIES } from "@/lib/accountHelpers";
 interface SelectCurrencyProps {
   id?: string;
   name?: string;

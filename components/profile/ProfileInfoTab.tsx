@@ -1,7 +1,8 @@
 "use client";
 
+import { ProfileUpdatePayload } from "@/lib/types/profile";
+import { User } from "@/lib/types/user";
 import { Mail, MapPin, Phone, Save, User2, X } from "lucide-react";
-import { ProfileUpdatePayload, User } from "@/lib/types";
 
 type Props = {
   isEditing: boolean;

@@ -10,7 +10,6 @@ import {
   SheetTitle,
 } from "../ui/sheet";
 import { Button } from "../ui/button";
-import { Account, Category, TransactionPayload } from "@/lib/types";
 import { useDeviceStore } from "@/store/useDeviceStore";
 import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -24,6 +23,16 @@ import { useUser } from "../providers/UserProvider";
 import { useLoadingStore } from "@/store/useLoadingStore";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { useRouter } from "next/navigation";
+import { TransactionPayload } from "@/lib/types/transaction";
+import { Category } from "@/lib/types/category";
+import { Account } from "@/lib/types/account";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const createInitialForm = () => ({
   account: "",
@@ -116,7 +125,7 @@ const AddTransaction = ({
 
   const handleTypeChange = (type: "expense" | "income") => {
     setTransactionType(type);
-    setSelectedCategory(undefined); // Reset category when type changes
+    setSelectedCategory(undefined);
   };
 
   const filteredCategories = categories.filter(
@@ -216,22 +225,26 @@ const AddTransaction = ({
                     <TabsContent value="expense" className="my-2 space-y-3">
                       <div className="grid gap-2">
                         <Label>Pilih Akun</Label>
-                        <select
-                          className="w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                        <Select
                           value={formData.account}
-                          onChange={(e) =>
+                          onValueChange={(value) =>
                             setFormData((prev) => ({
                               ...prev,
-                              account: e.target.value,
+                              account: value,
                             }))
                           }
                         >
-                          {accounts.map((account) => (
-                            <option key={account.id} value={account.id}>
-                              {account.name}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Pilih akun" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {accounts.map((account) => (
+                              <SelectItem key={account.id} value={account.id}>
+                                {account.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="grid gap-2">
                         <Label>Nominal</Label>

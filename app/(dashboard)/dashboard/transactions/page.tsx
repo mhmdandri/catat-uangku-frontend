@@ -1,6 +1,7 @@
 import TransactionPage from "@/components/transactions/TransactionPage";
 import { serverGet } from "@/lib/api/server";
-import { Transaction, User } from "@/lib/types";
+import type { Transaction } from "@/lib/types/transaction";
+import type { User } from "@/lib/types/user";
 import React from "react";
 
 const getTrx = async () => {

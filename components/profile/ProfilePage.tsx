@@ -6,7 +6,6 @@ import ProfileInfoTab from "@/components/profile/ProfileInfoTab";
 import ProfileSecurityTab from "@/components/profile/ProfileSecurityTab";
 import ProfilePreferencesTab from "@/components/profile/ProfilePreferencesTab";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
-import { ProfileUpdatePayload, User, type Preferences } from "@/lib/types";
 import { useUser } from "../providers/UserProvider";
 import { api, put } from "@/lib/axios";
 import { useLoadingStore } from "@/store/useLoadingStore";
@@ -14,6 +13,8 @@ import { toastError, toastSuccess } from "@/lib/toast";
 import axios from "axios";
 import ProfileSkeleton from "./ProfileSkeleton";
 import { useTheme } from "next-themes";
+import { Preferences, ProfileUpdatePayload } from "@/lib/types/profile";
+import { User } from "@/lib/types/user";
 
 export type ActiveTab = "profile" | "security" | "preferences";
 const ProfilePage = () => {

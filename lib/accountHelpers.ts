@@ -1,18 +1,14 @@
 import { Banknote, Building2, Smartphone } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type {
+import {
+  AddAccountFormData,
   Account,
   AccountPayload,
   AccountTotals,
-  AccountTransaction,
-  AccountTransactionsLoadingMap,
-  AccountTransactionsMap,
   AccountType,
-  AddAccountFormData,
-  CurrencySummary,
-  Transaction,
-  UUID,
-} from "./types";
+  Summary,
+} from "./types/account";
+import type { Transaction } from "./types/transaction";
 
 type AccountTypeStyle = {
   icon: LucideIcon;
@@ -35,28 +31,6 @@ export const buildAccountNumber = (account: Account): string => {
   return "-";
 };
 
-export const mapTransactionResponses = (
-  data: Transaction[],
-  accountId: UUID
-): AccountTransaction[] =>
-  data.map((item) => {
-    const line = item.transaction_lines?.find(
-      (l) => l.account_id === accountId
-    );
-    const lineAmount = line ? line.credit - line.debit : item.total_amount ?? 0;
-    const signedAmount =
-      item.type === "expense" ? -Math.abs(lineAmount) : Math.abs(lineAmount);
-    return {
-      id: item.id,
-      accountId,
-      title:
-        item.title || (item.type === "income" ? "Pemasukan" : "Pengeluaran"),
-      amount: signedAmount,
-      type: item.type,
-      date: item.date,
-    };
-  });
-
 export const calculateAccountTotals = (accounts: Account[]): AccountTotals =>
   accounts.reduce(
     (totals, acc) => {
@@ -76,22 +50,22 @@ export const calculateAccountTotals = (accounts: Account[]): AccountTotals =>
   );
 
 export const shouldFetchTransactions = (
-  accountId: UUID,
-  transactionsByAccount: AccountTransactionsMap,
-  transactionsLoading: AccountTransactionsLoadingMap
+  accountId: string,
+  transactionsByAccount: Record<string, Transaction[]>,
+  transactionsLoading: Record<string, boolean>
 ): boolean =>
   !transactionsByAccount[accountId] && !transactionsLoading[accountId];
 
 export const createAccountPayload = (
   formData: AddAccountFormData,
-  userId: UUID
+  userId: string
 ): AccountPayload => ({
   owner_user_id: userId,
   name: formData.name,
   type: formData.type,
   first_balance: formData.first_balance || 0,
   number: formData.number?.trim() || null,
-  currency: formData.currency?.trim() || "",
+  currency: formData.currency?.trim() || "IDR",
   scope: "personal",
   is_shared: false,
   is_active: true,
@@ -99,8 +73,8 @@ export const createAccountPayload = (
 
 export function calculateAccountTotalsByCurrency(
   accounts: Account[]
-): CurrencySummary[] {
-  const map = new Map<string, CurrencySummary>();
+): Summary[] {
+  const map = new Map<string, Summary>();
 
   for (const acc of accounts) {
     const currency = acc.currency ?? "IDR";
@@ -134,8 +108,9 @@ export function calculateAccountTotalsByCurrency(
 
 export const createInitialAccountForm = (): AddAccountFormData => ({
   name: "",
-  type: "bank",
   number: "",
+  type: "bank",
+  currency: "IDR",
   first_balance: 0,
 });
 

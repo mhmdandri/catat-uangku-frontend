@@ -2,7 +2,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { LogOut, User2 } from "lucide-react";
-import type { User } from "@/lib/types";
 import { resolveAvatarUrl } from "@/lib/avatar";
 import {
   DropdownMenu,
@@ -13,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { User } from "@/lib/types/user";
 
 type Variant = "full" | "icon";
 interface ProfileDropdownProps {

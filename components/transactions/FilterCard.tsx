@@ -2,11 +2,11 @@ import { Filter, Search } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { TransactionTypeFilter } from "@/lib/types";
+import { TransactionType } from "@/lib/types/transaction";
 
 type Props = {
-  filterType: TransactionTypeFilter;
-  onChangeFilter: (v: TransactionTypeFilter) => void;
+  filterType: "all" | TransactionType;
+  onChangeFilter: (v: "all" | TransactionType) => void;
   searchQuery: string;
   onChangeSearch: (v: string) => void;
   onOpenAdvancedFilter?: () => void;
