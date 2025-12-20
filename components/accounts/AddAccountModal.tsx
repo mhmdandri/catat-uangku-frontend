@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { LoaderIcon, X } from "lucide-react";
 import React from "react";
 import { SelectCurrency } from "../SelectCurrency";
 import { AddAccountFormData, AccountType } from "@/lib/types/account";
@@ -9,6 +9,7 @@ interface AddAccountModalProps {
   onClose: () => void;
   onChange: (data: AddAccountFormData) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isLoading?: boolean;
 }
 
 export const AddAccountModal: React.FC<AddAccountModalProps> = ({
@@ -17,6 +18,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
   onClose,
   onChange,
   onSubmit,
+  isLoading = false,
 }) => {
   if (!open) return null;
 
@@ -27,7 +29,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
           <h3 className="text-xl text-foreground">Tambah Rekening Baru</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 transition hover:bg-gray-100 dark:hover:bg-white/5"
+            disabled={isLoading}
+            className="rounded-lg p-2 transition hover:bg-gray-100 dark:hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -47,6 +50,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
               onChange={(e) => onChange({ ...formData, name: e.target.value })}
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="Contoh: BCA - Main"
+              disabled={isLoading}
               required
             />
           </div>
@@ -66,6 +70,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="4123-456-7890"
+              disabled={isLoading}
             />
           </div>
 
@@ -86,6 +91,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                 })
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+              disabled={isLoading}
             >
               <option value="bank">Bank</option>
               <option value="e-wallet">E-Wallet</option>
@@ -109,6 +115,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
                   currency: value,
                 })
               }
+              disabled={isLoading}
             />
           </div>
 
@@ -131,6 +138,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground px-4 py-2.5 sm:py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="0"
+              disabled={isLoading}
               required
             />
           </div>
@@ -139,14 +147,17 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-full sm:flex-1 rounded-lg border border-border px-4 py-2.5 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5"
+              disabled={isLoading}
+              className="w-full sm:flex-1 rounded-lg border border-border px-4 py-2.5 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="w-full sm:flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-white transition hover:bg-emerald-700"
+              disabled={isLoading}
+              className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
+              {isLoading && <LoaderIcon className="h-4 w-4 animate-spin" />}
               Tambah Rekening
             </button>
           </div>

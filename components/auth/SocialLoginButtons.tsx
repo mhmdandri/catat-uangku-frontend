@@ -1,7 +1,6 @@
 import { get } from "@/lib/axios";
 import { toastError } from "@/lib/toast";
-import { useLoadingStore } from "@/store/useLoadingStore";
-import React from "react";
+import React, { useState } from "react";
 
 type SocialLoginButtonsProps = {
   remember?: boolean;
@@ -10,10 +9,10 @@ type SocialLoginButtonsProps = {
 const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
   remember = false,
 }) => {
-  const { isLoading, startLoading, stopLoading } = useLoadingStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const handleLoginGoogle = async () => {
-    if (isLoading) return;
-    startLoading();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const qs = remember ? "?remember=true" : "";
       const res = await get<{ url: string }>(`/auth/google/login${qs}`);
@@ -26,14 +25,14 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
       console.error("Error during Google login:", error);
       toastError("Gagal memulai login dengan Google");
     } finally {
-      stopLoading();
+      setIsSubmitting(false);
     }
   };
   return (
     <div className="space-y-3">
       <button
         onClick={handleLoginGoogle}
-        disabled={isLoading}
+        disabled={isSubmitting}
         className="flex w-full items-center justify-center gap-3 rounded-lg border-2 border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-3 transition hover:bg-gray-50 dark:hover:bg-zinc-900/70"
       >
         <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -55,7 +54,7 @@ const SocialLoginButtons: React.FC<SocialLoginButtonsProps> = ({
           />
         </svg>
         <span className="text-sm sm:text-base text-gray-700 dark:text-zinc-100 font-medium">
-          {isLoading ? "Menghubungkan..." : "Lanjutkan dengan Google"}
+          {isSubmitting ? "Menghubungkan..." : "Lanjutkan dengan Google"}
         </span>
       </button>
     </div>

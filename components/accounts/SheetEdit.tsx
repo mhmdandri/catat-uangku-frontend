@@ -15,6 +15,14 @@ import { Switch } from "../ui/switch";
 import { SelectCurrency } from "../SelectCurrency";
 import { useDeviceStore } from "@/store/useDeviceStore";
 import { AccountType, EditAccountPayload } from "@/lib/types/account";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import { LoaderIcon } from "lucide-react";
 
 interface SheetEditProps {
   open: boolean;
@@ -22,6 +30,7 @@ interface SheetEditProps {
   editForm: EditAccountPayload;
   setEditForm: (form: EditAccountPayload) => void;
   onSave: () => void;
+  isLoading?: boolean;
 }
 const SheetEdit = ({
   open,
@@ -29,11 +38,17 @@ const SheetEdit = ({
   editForm,
   setEditForm,
   onSave,
+  isLoading = false,
 }: SheetEditProps) => {
   const { isMobile } = useDeviceStore();
   return (
     <>
-      <Sheet open={open} onOpenChange={onClose}>
+      <Sheet
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !isLoading) onClose();
+        }}
+      >
         <SheetContent
           className="px-3 sm:px-6"
           side={isMobile ? "bottom" : "right"}
@@ -54,6 +69,7 @@ const SheetEdit = ({
                 onChange={(e) =>
                   setEditForm({ ...editForm, name: e.target.value })
                 }
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-3">
@@ -67,25 +83,30 @@ const SheetEdit = ({
                     number: e.target.value || null,
                   })
                 }
+                disabled={isLoading}
               />
             </div>
             <div className="grid gap-3">
               <Label htmlFor="tipe">Tipe Rekening</Label>
-              <select
-                id="tipe"
+              <Select
                 value={editForm.type}
-                onChange={(e) =>
+                onValueChange={(value: AccountType) =>
                   setEditForm({
                     ...editForm,
-                    type: e.target.value as AccountType,
+                    type: value,
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                disabled={isLoading}
               >
-                <option value="bank">Bank</option>
-                <option value="e-wallet">E-Wallet</option>
-                <option value="cash">Cash</option>
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue>{editForm.type.toLocaleUpperCase()}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bank">Bank</SelectItem>
+                  <SelectItem value="e-wallet">E-Wallet</SelectItem>
+                  <SelectItem value="cash">Cash</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-3">
               <Label htmlFor="currency">Mata Uang</Label>
@@ -98,6 +119,7 @@ const SheetEdit = ({
                     currency: value,
                   })
                 }
+                disabled={isLoading}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -116,16 +138,26 @@ const SheetEdit = ({
                   onCheckedChange={(checked) =>
                     setEditForm({ ...editForm, is_active: checked })
                   }
+                  disabled={isLoading}
                 />
               </div>
             </div>
           </div>
           <SheetFooter className="pt-6 flex gap-2 sm:flex-row sm:justify-end">
-            <Button onClick={onSave} className="w-full sm:w-auto">
+            <Button
+              onClick={onSave}
+              className="w-full sm:w-auto"
+              disabled={isLoading}
+            >
+              {isLoading && <LoaderIcon className="h-4 w-4 animate-spin" />}
               Save changes
             </Button>
             <SheetClose asChild>
-              <Button variant="outline" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                disabled={isLoading}
+              >
                 Close
               </Button>
             </SheetClose>

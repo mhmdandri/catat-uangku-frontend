@@ -51,6 +51,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 pl-10 pr-4 py-3 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="Masukkan nama pengguna"
+              disabled={isLoading}
               required
             />
           </div>
@@ -75,6 +76,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
             }
             className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 py-3 pl-10 pr-4 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
             placeholder="nama@email.com"
+            disabled={isLoading}
             required
           />
         </div>
@@ -98,12 +100,14 @@ const AuthForm: React.FC<AuthFormProps> = ({
             }
             className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 py-3 pl-10 pr-12 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
             placeholder="Masukkan password"
+            disabled={isLoading}
             required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+            disabled={isLoading}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {showPassword ? (
               <EyeOff className="h-5 w-5" />
@@ -136,6 +140,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 py-3 pl-10 pr-4 transition focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               placeholder="Konfirmasi password"
+              disabled={isLoading}
               required
             />
           </div>
@@ -156,6 +161,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
               checked={remember}
               onChange={(e) => setRemember(e.target.checked)}
               className="h-4 w-4 rounded border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-emerald-600 focus:ring-emerald-600"
+              disabled={isLoading}
             />
             <span className="text-sm text-gray-600 dark:text-zinc-400">
               Ingat saya
@@ -166,6 +172,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
             type="button"
             onClick={onForgotPassword}
             className="h-auto p-0 text-left sm:text-right text-sm text-emerald-600 hover:text-emerald-700 hover:no-underline cursor-pointer"
+            disabled={isLoading}
           >
             Lupa password?
           </Button>

@@ -13,17 +13,22 @@ import CategoryIcon from "../ui/CategoryIcon";
 import { EmptyPage } from "../EmptyPage";
 import { useModalStore } from "@/store/useModalStore";
 import { Transaction } from "@/lib/types/transaction";
+import { Skeleton } from "../ui/skeleton";
 
 type Props = {
   transactions?: Transaction[];
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  isLoading?: boolean;
+  isActionDisabled?: boolean;
 };
 
 export default function TransactionTable({
   transactions,
   onEdit,
   onDelete,
+  isLoading = false,
+  isActionDisabled = false,
 }: Props) {
   const { openModal } = useModalStore();
 
@@ -48,85 +53,124 @@ export default function TransactionTable({
             </TableHeader>
 
             <TableBody>
-              {transactions?.map((t) => (
-                <TableRow key={t.id} className="hover:bg-muted/40">
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      {t.date}
-                    </div>
-                  </TableCell>
+              {isLoading
+                ? Array.from({ length: 6 }).map((_, idx) => (
+                    <TableRow key={`skeleton-${idx}`}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-4" />
+                          <Skeleton className="h-4 w-24" />
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-3 w-32" />
+                            <Skeleton className="h-3 w-24" />
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Skeleton className="ml-auto h-4 w-24" />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : transactions?.map((t) => (
+                    <TableRow key={t.id} className="hover:bg-muted/40">
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          {t.date}
+                        </div>
+                      </TableCell>
 
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon
-                        iconName={t.category.icon}
-                        color={t.category.color}
-                        size={20}
-                        showBackground={true}
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {t.title || "-"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {t.description}
-                        </p>
-                      </div>
-                    </div>
-                  </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <CategoryIcon
+                            iconName={t.category.icon}
+                            color={t.category.color}
+                            size={20}
+                            showBackground={true}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {t.title || "-"}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {t.description}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
 
-                  <TableCell>
-                    <span className="inline-flex rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-                      {t.category.name || "-"}
-                    </span>
-                  </TableCell>
+                      <TableCell>
+                        <span className="inline-flex rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+                          {t.category.name || "-"}
+                        </span>
+                      </TableCell>
 
-                  <TableCell className="text-sm text-muted-foreground">
-                    {t.transaction_lines?.[0]?.account_name || "-"}
-                  </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {t.transaction_lines?.[0]?.account_name || "-"}
+                      </TableCell>
 
-                  <TableCell className="text-right">
-                    <span
-                      className={
-                        t.type === "income"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-red-600 dark:text-red-400"
-                      }
-                    >
-                      {t.type === "income" ? "+" : "-"} Rp{" "}
-                      {Math.abs(t.total_amount ?? 0).toLocaleString("id-ID")}
-                    </span>
-                  </TableCell>
+                      <TableCell className="text-right">
+                        <span
+                          className={
+                            t.type === "income"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-red-600 dark:text-red-400"
+                          }
+                        >
+                          {t.type === "income" ? "+" : "-"} Rp{" "}
+                          {Math.abs(t.total_amount ?? 0).toLocaleString(
+                            "id-ID"
+                          )}
+                        </span>
+                      </TableCell>
 
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onEdit?.(t.id)}
-                        aria-label="Edit transaksi"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onDelete?.(t.id)}
-                        className="text-red-600 hover:text-red-700 dark:text-red-400"
-                        aria-label="Hapus transaksi"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onEdit?.(t.id)}
+                            aria-label="Edit transaksi"
+                            disabled={isActionDisabled}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onDelete?.(t.id)}
+                            className="text-red-600 hover:text-red-700 dark:text-red-400"
+                            aria-label="Hapus transaksi"
+                            disabled={isActionDisabled}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
         </div>
 
-        {transactions?.length === 0 && (
+        {!isLoading && transactions?.length === 0 && (
           <EmptyPage
             btnText="Tambah Transaksi"
             title="Belum ada transaksi"

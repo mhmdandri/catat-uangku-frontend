@@ -2,9 +2,8 @@
 import { put } from "@/lib/axios";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { PasswordChangePayload } from "@/lib/types/profile";
-import { useLoadingStore } from "@/store/useLoadingStore";
 import axios from "axios";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff, LoaderIcon, X } from "lucide-react";
 import React, { useState } from "react";
 
 type Props = {
@@ -19,7 +18,7 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
       new_password: "",
       confirm_password: "",
     });
-  const { startLoading, stopLoading } = useLoadingStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -28,7 +27,8 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
   if (!open) return null;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    startLoading();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const res: { message: string } = await put(
         "/users/password",
@@ -52,7 +52,7 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
       }
       return;
     } finally {
-      stopLoading();
+      setIsSubmitting(false);
     }
     setPasswordFormData({
       old_password: "",
@@ -68,7 +68,8 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
           <h3 className="text-xl text-foreground">Ubah Password</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 transition hover:bg-gray-100 dark:hover:bg-white/5"
+            disabled={isSubmitting}
+            className="rounded-lg p-2 transition hover:bg-gray-100 dark:hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <X className="h-5 w-5 text-muted-foreground" />
           </button>
@@ -93,11 +94,13 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
                   }))
                 }
                 className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 pr-12 text-foreground focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                disabled={isSubmitting}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showCurrentPassword ? (
@@ -128,11 +131,13 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
                   }))
                 }
                 className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 pr-12 text-foreground focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                disabled={isSubmitting}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
+                disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showNewPassword ? (
@@ -163,11 +168,13 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
                   }))
                 }
                 className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 pr-12 text-foreground focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                disabled={isSubmitting}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={isSubmitting}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showConfirmPassword ? (
@@ -182,14 +189,17 @@ const ChangePasswordModal: React.FC<Props> = ({ open, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-border px-4 py-2 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5"
+              disabled={isSubmitting}
+              className="flex-1 w-1/2 rounded-lg border border-border px-4 py-2 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700"
+              disabled={isSubmitting}
+              className="flex w-1/2 justify-center items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700"
             >
+              {isSubmitting && <LoaderIcon className="h-4 w-4 animate-spin" />}
               Ubah Password
             </button>
           </div>

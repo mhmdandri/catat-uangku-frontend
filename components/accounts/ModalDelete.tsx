@@ -10,16 +10,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { LoaderIcon } from "lucide-react";
 
 interface ModalDeleteProps {
   open: boolean;
   onClose: () => void;
   onDelete: () => void;
+  isLoading?: boolean;
 }
-const ModalDelete = ({ open, onClose, onDelete }: ModalDeleteProps) => {
+const ModalDelete = ({
+  open,
+  onClose,
+  onDelete,
+  isLoading = false,
+}: ModalDeleteProps) => {
   return (
     <>
-      <AlertDialog open={open} onOpenChange={onClose}>
+      <AlertDialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen && !isLoading) onClose();
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
@@ -32,11 +44,19 @@ const ModalDelete = ({ open, onClose, onDelete }: ModalDeleteProps) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <AlertDialogCancel className="w-full sm:w-auto">
+            <AlertDialogCancel
+              className="w-full sm:w-auto"
+              disabled={isLoading}
+            >
               Batal
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button onClick={onDelete} className="w-full sm:w-auto">
+              <Button
+                onClick={onDelete}
+                className="w-full sm:w-auto"
+                disabled={isLoading}
+              >
+                {isLoading && <LoaderIcon className="h-4 w-4 animate-spin" />}
                 Hapus
               </Button>
             </AlertDialogAction>

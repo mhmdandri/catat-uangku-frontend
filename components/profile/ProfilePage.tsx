@@ -8,7 +8,6 @@ import ProfilePreferencesTab from "@/components/profile/ProfilePreferencesTab";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
 import { useUser } from "../providers/UserProvider";
 import { api, put } from "@/lib/axios";
-import { useLoadingStore } from "@/store/useLoadingStore";
 import { toastError, toastSuccess } from "@/lib/toast";
 import axios from "axios";
 import ProfileSkeleton from "./ProfileSkeleton";
@@ -18,8 +17,7 @@ import { User } from "@/lib/types/user";
 
 export type ActiveTab = "profile" | "security" | "preferences";
 const ProfilePage = () => {
-  const { user, setUser } = useUser();
-  const { isLoading, startLoading, stopLoading } = useLoadingStore();
+  const { user, setUser, isLoading: isUserLoading } = useUser();
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -89,7 +87,6 @@ const ProfilePage = () => {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileFormData) return;
-    startLoading();
     try {
       setErrorMsg(null);
       setSaving(true);
@@ -120,7 +117,6 @@ const ProfilePage = () => {
       setErrorMsg("Gagal menyimpan profil. Cek input dan coba lagi.");
     } finally {
       setSaving(false);
-      stopLoading();
     }
   };
 
@@ -141,7 +137,6 @@ const ProfilePage = () => {
   const handleUploadAvatar = async (file: File) => {
     setErrorMsg(null);
     setUploadingAvatar(true);
-    startLoading();
     try {
       const formData = new FormData();
       formData.append("avatar", file);
@@ -167,7 +162,6 @@ const ProfilePage = () => {
       }
     } finally {
       setUploadingAvatar(false);
-      stopLoading();
     }
   };
 
@@ -196,10 +190,11 @@ const ProfilePage = () => {
     }
   }, [theme]);
 
+  const isPageLoading = isUserLoading;
   return (
     <>
-      {(!fullProfile || isLoading) && <ProfileSkeleton />}
-      {fullProfile && (
+      {isPageLoading && <ProfileSkeleton />}
+      {!isPageLoading && fullProfile && (
         <>
           <ProfileHeaderCard
             userData={fullProfile}

@@ -94,6 +94,7 @@ const ProfileInfoTab: React.FC<Props> = ({
                 })
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 text-foreground"
+              disabled={isSaving}
               required
             />
           </div>
@@ -115,6 +116,7 @@ const ProfileInfoTab: React.FC<Props> = ({
                 })
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 text-foreground"
+              disabled={isSaving}
             />
           </div>
           <div>
@@ -135,6 +137,7 @@ const ProfileInfoTab: React.FC<Props> = ({
                 })
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 text-foreground"
+              disabled={isSaving}
             />
           </div>
           <div>
@@ -155,6 +158,7 @@ const ProfileInfoTab: React.FC<Props> = ({
                 })
               }
               className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 text-foreground"
+              disabled={isSaving}
             />
           </div>
         </div>
@@ -177,13 +181,15 @@ const ProfileInfoTab: React.FC<Props> = ({
             className="w-full rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 text-foreground"
             rows={4}
             placeholder="Ceritakan tentang dirimu..."
+            disabled={isSaving}
           />
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
             onClick={onCancel}
-            className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5"
+            disabled={isSaving}
+            className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-foreground transition hover:bg-gray-50 dark:hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <X className="h-4 w-4" />
             <span>Batal</span>

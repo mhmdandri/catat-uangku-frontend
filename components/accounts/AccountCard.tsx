@@ -6,6 +6,7 @@ import {
   Trash2,
 } from "lucide-react";
 import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   accountTypeStyles,
   buildAccountNumber,
@@ -21,6 +22,7 @@ interface AccountCardProps {
   transactionsError?: string | null;
   isSelected: boolean;
   showBalances: boolean;
+  isMutating?: boolean;
   onSelect: () => void;
   onEdit: (accountId: Account["id"]) => void;
   onDelete: (accountId: Account["id"]) => void;
@@ -33,6 +35,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   transactionsError,
   isSelected,
   showBalances,
+  isMutating = false,
   onSelect,
   onEdit,
   onDelete,
@@ -44,6 +47,7 @@ export const AccountCard: React.FC<AccountCardProps> = ({
   const accountNumber = buildAccountNumber(account);
   const balance = account.balance ?? 0;
   const isActive = !!account.is_active;
+  const isDeleteDisabled = !isActive || isMutating;
 
   return (
     <>
@@ -90,11 +94,13 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 e.stopPropagation();
                 onEdit(account.id);
               }}
+              disabled={isMutating}
               className={[
                 "rounded-lg p-2 transition hover:bg-gray-100 dark:hover:bg-white/5",
                 isActive
                   ? "sm:opacity-0 sm:group-hover:opacity-100 opacity-100"
                   : "opacity-100",
+                isMutating ? "opacity-40 cursor-not-allowed" : "",
               ].join(" ")}
               aria-label="Edit akun"
             >
@@ -104,15 +110,16 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                if (!isActive) return;
+                if (isDeleteDisabled) return;
                 onDelete(account.id);
               }}
-              disabled={!isActive}
+              disabled={isDeleteDisabled}
               className={[
                 "rounded-lg p-2 transition",
                 isActive
                   ? "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-50"
                   : "opacity-40 cursor-not-allowed",
+                isMutating ? "opacity-40 cursor-not-allowed" : "",
               ].join(" ")}
               aria-label="Hapus akun"
               title={!isActive ? "Aktifkan akun untuk menghapus" : undefined}
@@ -152,9 +159,23 @@ export const AccountCard: React.FC<AccountCardProps> = ({
             <h4 className="mb-2 text-sm text-foreground">Transaksi Terbaru</h4>
 
             {transactionsLoading ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Memuat transaksi...
-              </p>
+              <div className="space-y-2">
+                {Array.from({ length: 2 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-white/5 p-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-6 w-6 rounded-md" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-3 w-24" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                ))}
+              </div>
             ) : transactionsError ? (
               <p className="py-4 text-center text-sm text-red-600">
                 {transactionsError}

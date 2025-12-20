@@ -7,13 +7,13 @@ import { Button } from "../../ui/button";
 import { useToggleStore } from "@/store/useToggleStore";
 import { useModalStore } from "@/store/useModalStore";
 import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
-//import AddTransaction from "@/components/transactions/AddTransaction";
 import { User } from "@/lib/types/user";
 
 interface NavbarProps {
   userData: User | null;
   isLoading?: boolean;
   onLogout?: () => void;
+  isLoggingOut?: boolean;
 }
 
 type ActionVariant = "primary" | "outline" | "danger";
@@ -124,7 +124,12 @@ const variantClass: Record<ActionVariant, string> = {
     "bg-red-600 text-white hover:bg-red-700 border border-transparent dark:bg-red-500 dark:hover:bg-red-600",
 };
 
-export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
+export function Navbar({
+  userData,
+  isLoading,
+  onLogout,
+  isLoggingOut,
+}: NavbarProps) {
   const { openModal } = useModalStore();
   const { isActive, toggle } = useToggleStore();
   const pathname = usePathname();
@@ -192,12 +197,6 @@ export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
 
   return (
     <>
-      {/* <AddTransaction
-        open={isOpen("transaction")}
-        onClose={() => closeModal("transaction")}
-        setForm={() => {}}
-        onSubmit={() => {}}
-      /> */}
       <header className="border-b border-border bg-card px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-start sm:items-center justify-between gap-3">
           <div className="min-w-0">
@@ -243,6 +242,7 @@ export function Navbar({ userData, isLoading, onLogout }: NavbarProps) {
                 onLogout={onLogout}
                 align="end"
                 variant="icon"
+                isLoggingOut={isLoggingOut}
               />
             )}
           </div>

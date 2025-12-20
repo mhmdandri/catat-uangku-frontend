@@ -2,7 +2,6 @@
 import React, { useCallback, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { post } from "@/lib/axios";
-import { useLoadingStore } from "@/store/useLoadingStore";
 import DialogRegister from "../DialogRegister";
 import DialogForgetPwd from "../DialogForgetPwd";
 import AuthForm from "./AuthForm";
@@ -24,7 +23,7 @@ const Login = () => {
   const signParam = searchParams.get("sign");
   const [isLogin, setIsLogin] = useState(signParam !== "register");
   const [showPassword, setShowPassword] = useState(false);
-  const { isLoading, startLoading, stopLoading } = useLoadingStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [showForgetPassword, setShowForgetPassword] = useState(false);
@@ -47,7 +46,8 @@ const Login = () => {
   );
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    startLoading();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setErrorMessage("");
     try {
       if (isLogin) {
@@ -80,7 +80,7 @@ const Login = () => {
         toast.error("Terjadi kesalahan. Silakan coba lagi.");
       }
     } finally {
-      stopLoading();
+      setIsSubmitting(false);
     }
   };
   return (
@@ -94,6 +94,7 @@ const Login = () => {
         email={registeredEmail}
         onClose={() => setOpen(false)}
         onGoToLogin={() => setMode("login")}
+        isProcessing={isSubmitting}
       />
       <div className="min-h-dvh bg-white dark:bg-zinc-950 transition-colors">
         <div className="flex min-h-dvh w-full">
@@ -108,7 +109,7 @@ const Login = () => {
                 setFormData={setFormData}
                 showPassword={showPassword}
                 setShowPassword={setShowPassword}
-                isLoading={isLoading}
+                isLoading={isSubmitting}
                 onSubmit={handleSubmit}
                 onForgotPassword={() => setShowForgetPassword(true)}
                 errorMessage={errorMessage}

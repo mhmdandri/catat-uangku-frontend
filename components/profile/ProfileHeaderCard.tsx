@@ -3,11 +3,11 @@ import { Calendar, Camera, Edit } from "lucide-react";
 import type { User } from "@/lib/types/user";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { useLoadingStore } from "@/store/useLoadingStore";
 import { get } from "@/lib/axios";
 import { differenceInMonths } from "date-fns";
 import { Transaction } from "@/lib/types/transaction";
 import { Account } from "@/lib/types/account";
+import { Skeleton } from "@/components/ui/skeleton";
 type Props = {
   userData: User;
   stats: {
@@ -33,9 +33,9 @@ const ProfileHeaderCard: React.FC<Props> = ({
   const [avatarError, setAvatarError] = useState(false);
   const [transaction, setTransaction] = useState<Transaction[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const { startLoading, stopLoading } = useLoadingStore();
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
   const fetchTrx = useCallback(async () => {
-    startLoading();
+    setIsStatsLoading(true);
     try {
       const resTrx = await get<{ data: Transaction[] }>(
         `/transactions/user/${userData.id}`
@@ -46,14 +46,16 @@ const ProfileHeaderCard: React.FC<Props> = ({
       setAccounts(resAcc.data);
       setTransaction(resTrx.data);
     } catch {
+      setAccounts([]);
+      setTransaction([]);
     } finally {
-      stopLoading();
+      setIsStatsLoading(false);
     }
-  }, [startLoading, stopLoading, userData.id]);
+  }, [userData.id]);
   useEffect(() => {
     console.log(userData);
-    fetchTrx();
-  }, [transaction.length, fetchTrx, userData]);
+    void fetchTrx();
+  }, [fetchTrx, userData]);
 
   const umurAkun = useMemo(() => {
     const createdAt = userData?.created_at;
@@ -165,11 +167,21 @@ const ProfileHeaderCard: React.FC<Props> = ({
         </div>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
-            <p className="text-2xl text-emerald-600">{transaction.length}</p>
+            {isStatsLoading ? (
+              <Skeleton className="mx-auto h-7 w-10" />
+            ) : (
+              <p className="text-2xl text-emerald-600">
+                {transaction.length}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground">Transaksi</p>
           </div>
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
-            <p className="text-2xl text-emerald-600">{accounts.length}</p>
+            {isStatsLoading ? (
+              <Skeleton className="mx-auto h-7 w-10" />
+            ) : (
+              <p className="text-2xl text-emerald-600">{accounts.length}</p>
+            )}
             <p className="text-sm text-muted-foreground">Rekening</p>
           </div>
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">

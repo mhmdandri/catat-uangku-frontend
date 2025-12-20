@@ -18,9 +18,15 @@ interface SidebarProps {
   userData: User | null;
   onLogout?: () => void;
   isLoading?: boolean;
+  isLoggingOut?: boolean;
 }
 
-export function Sidebar({ userData, onLogout, isLoading }: SidebarProps) {
+export function Sidebar({
+  userData,
+  onLogout,
+  isLoading,
+  isLoggingOut,
+}: SidebarProps) {
   const pathname = usePathname();
   const navItems = [
     {
@@ -108,6 +114,7 @@ export function Sidebar({ userData, onLogout, isLoading }: SidebarProps) {
               user={userData}
               onLogout={onLogout}
               variant="full"
+              isLoggingOut={isLoggingOut}
             />
           </div>
         )}

@@ -31,7 +31,9 @@ const AccountPage: React.FC = () => {
   );
   const { isOpen, closeModal } = useModalStore();
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+  const [isAccountsInitialLoading, setIsAccountsInitialLoading] =
+    useState(true);
+  const [isAccountMutating, setIsAccountMutating] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
@@ -66,11 +68,12 @@ const AccountPage: React.FC = () => {
     let active = true;
     if (!user?.id) {
       setAccounts([]);
-      setIsLoadingAccounts(false);
+      setFetchError(null);
+      setIsAccountsInitialLoading(false);
       return;
     }
     const fetchAccounts = async () => {
-      setIsLoadingAccounts(true);
+      setIsAccountsInitialLoading(true);
       setFetchError(null);
       try {
         const response = await get<{ data: Account[] }>(
@@ -83,7 +86,7 @@ const AccountPage: React.FC = () => {
         setFetchError("Gagal memuat daftar akun");
         setAccounts([]);
       } finally {
-        if (active) setIsLoadingAccounts(false);
+        if (active) setIsAccountsInitialLoading(false);
       }
     };
     void fetchAccounts();
@@ -163,12 +166,13 @@ const AccountPage: React.FC = () => {
   const handleAddAccount = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      if (isAccountMutating) return;
       if (!user?.id) {
         toastError("Pengguna tidak ditemukan");
         return;
       }
       console.log("Adding account with data:", formData);
-      setIsLoadingAccounts(true);
+      setIsAccountMutating(true);
       setFetchError(null);
       try {
         const payload = createAccountPayload(formData, user.id);
@@ -192,10 +196,10 @@ const AccountPage: React.FC = () => {
           setFetchError("Gagal menambahkan akun");
         }
       } finally {
-        setIsLoadingAccounts(false);
+        setIsAccountMutating(false);
       }
     },
-    [formData, user?.id, closeModal]
+    [formData, user?.id, closeModal, isAccountMutating]
   );
   const handleConfirmDelete = (accountId: string) => {
     setShowModalDelete(true);
@@ -203,11 +207,12 @@ const AccountPage: React.FC = () => {
   };
   const handleDelete = useCallback(
     async (accountId: string) => {
+      if (isAccountMutating) return;
       if (!user?.id) {
         toastError("Pengguna tidak ditemukan");
         return;
       }
-      setIsLoadingAccounts(true);
+      setIsAccountMutating(true);
       setFetchError(null);
       try {
         await del(`/accounts/${accountId}`);
@@ -226,10 +231,10 @@ const AccountPage: React.FC = () => {
           toastError(message);
         }
       } finally {
-        setIsLoadingAccounts(false);
+        setIsAccountMutating(false);
       }
     },
-    [user?.id]
+    [user?.id, isAccountMutating]
   );
   const handleShowEdit = (accountId: string) => {
     setShowEditForm(true);
@@ -247,7 +252,8 @@ const AccountPage: React.FC = () => {
     }
   };
   const handleSaveEdit = async () => {
-    setIsLoadingAccounts(true);
+    if (isAccountMutating) return;
+    setIsAccountMutating(true);
     setFetchError(null);
     try {
       const res = await put<{ message: string; data: Account }>(
@@ -267,14 +273,15 @@ const AccountPage: React.FC = () => {
         toastError(message);
       }
     } finally {
-      setIsLoadingAccounts(false);
+      setIsAccountMutating(false);
     }
   };
   const summaries = useMemo(
     () => calculateAccountTotalsByCurrency(accounts),
     [accounts]
   );
-  const isLoading = isLoadingAccounts || isUserLoading;
+  // Gate all data-dependent sections to prevent empty states while user/accounts still loading.
+  const isPageLoading = isUserLoading || isAccountsInitialLoading;
   const { openModal } = useModalStore();
   return (
     <>
@@ -285,6 +292,7 @@ const AccountPage: React.FC = () => {
           onSave={handleSaveEdit}
           editForm={formEdit}
           setEditForm={setFormEdit}
+          isLoading={isAccountMutating}
         ></SheetEdit>
       )}
       {showModalDelete && selectedAccDeleteId && (
@@ -292,18 +300,19 @@ const AccountPage: React.FC = () => {
           open={showModalDelete}
           onClose={() => setShowModalDelete(false)}
           onDelete={() => handleDelete(selectedAccDeleteId)}
+          isLoading={isAccountMutating}
         ></ModalDelete>
       )}
-      {isLoading ? (
+      {isPageLoading ? (
         <AccountSummarySkeleton />
       ) : (
         <AccountSummary summaries={summaries} showBalances={showBalances} />
       )}
-      {fetchError && !isLoading && (
+      {fetchError && !isPageLoading && (
         <p className="mb-3 text-sm text-red-600">{fetchError}</p>
       )}
       <div className="mb-4 sm:mb-6 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoadingAccounts &&
+        {isPageLoading &&
           Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
@@ -326,7 +335,7 @@ const AccountPage: React.FC = () => {
               <Skeleton className="h-10 w-full" />
             </div>
           ))}
-        {!isLoadingAccounts && accounts.length === 0 && (
+        {!isPageLoading && accounts.length === 0 && (
           <div className="col-span-full rounded-xl bg-card border border-gray-100 text-center text-sm">
             <EmptyPage
               btnText="Tambah Akun"
@@ -336,7 +345,7 @@ const AccountPage: React.FC = () => {
             />
           </div>
         )}
-        {!isLoadingAccounts &&
+        {!isPageLoading &&
           accounts.map((account) => (
             <AccountCard
               key={account.id}
@@ -346,13 +355,14 @@ const AccountPage: React.FC = () => {
               transactionsError={transactionsError[account.id]}
               isSelected={selectedAccountId === account.id}
               showBalances={showBalances}
+              isMutating={isAccountMutating}
               onSelect={() => handleAccountSelect(account.id)}
               onEdit={() => handleShowEdit(account.id)}
               onDelete={() => handleConfirmDelete(account.id)}
             />
           ))}
       </div>
-      {isLoadingAccounts ? (
+      {isPageLoading ? (
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, idx) => (
             <div
@@ -381,6 +391,7 @@ const AccountPage: React.FC = () => {
         onClose={() => closeModal("account")}
         onChange={setFormData}
         onSubmit={handleAddAccount}
+        isLoading={isAccountMutating}
       />
     </>
   );

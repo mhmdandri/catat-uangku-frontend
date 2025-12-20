@@ -1,4 +1,4 @@
-import { CheckCircle, UserPlus } from "lucide-react";
+import { CheckCircle, LoaderIcon, UserPlus } from "lucide-react";
 import React from "react";
 
 interface DialogRegisterProps {
@@ -6,15 +6,18 @@ interface DialogRegisterProps {
   onClose: () => void;
   email?: string;
   onGoToLogin: () => void;
+  isProcessing?: boolean;
 }
 const DialogRegister: React.FC<DialogRegisterProps> = ({
   open,
   onClose,
   email,
   onGoToLogin,
+  isProcessing = false,
 }) => {
   if (!open) return null;
   const handleProceed = () => {
+    if (isProcessing) return;
     onClose();
     onGoToLogin();
   };
@@ -61,9 +64,16 @@ const DialogRegister: React.FC<DialogRegisterProps> = ({
           </div>
           <button
             onClick={handleProceed}
-            className="mt-6 w-full rounded-lg bg-emerald-600 px-6 py-3 text-sm sm:text-base font-medium text-primary-foreground transition hover:bg-emerald-700"
+            type="button"
+            disabled={isProcessing}
+            className="mt-6 w-full rounded-lg bg-emerald-600 px-6 py-3 text-sm sm:text-base font-medium text-primary-foreground transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Ke Form Login
+            <span className="inline-flex items-center justify-center gap-2">
+              {isProcessing && (
+                <LoaderIcon className="h-4 w-4 animate-spin" />
+              )}
+              {isProcessing ? "Mengalihkan..." : "Ke Form Login"}
+            </span>
           </button>
         </div>
       </div>

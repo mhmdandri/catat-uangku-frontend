@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 
 import FilterCard from "@/components/transactions/FilterCard";
 import TransactionTable from "@/components/transactions/TransactionTable";
@@ -8,6 +8,10 @@ import HeaderCards from "./HeaderCard";
 import { Transaction, TransactionType } from "@/lib/types/transaction";
 import AddTransaction from "./AddTransaction";
 import { useModalStore } from "@/store/useModalStore";
+import { useUser } from "../providers/UserProvider";
+import { get } from "@/lib/axios";
+import { Button } from "@/components/ui/button";
+import { usePageLoadState } from "@/hooks/usePageLoadState";
 
 interface TransactionPageProps {
   data: Transaction[];
@@ -15,13 +19,70 @@ interface TransactionPageProps {
 
 export default function TransactionPage({ data }: TransactionPageProps) {
   const { isOpen, closeModal } = useModalStore();
+  const { user, isLoading: isUserLoading } = useUser();
   const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>(data);
+  const [isTransactionsRefreshing, setIsTransactionsRefreshing] =
+    useState(false);
+  const [isTransactionMutating, setIsTransactionMutating] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   useEffect(() => {
     setTransactions(data);
   }, [data]);
+  const fetchTransactions = useCallback(async () => {
+    if (isTransactionsRefreshing) return;
+    if (!user?.id) {
+      if (!isUserLoading) {
+        setFetchError("Pengguna tidak ditemukan");
+      }
+      return;
+    }
+    setIsTransactionsRefreshing(true);
+    setFetchError(null);
+    try {
+      const res = await get<{ data: Transaction[] }>(
+        `/transactions/user/${user.id}`
+      );
+      setTransactions(res.data ?? []);
+    } catch {
+      setFetchError("Gagal memuat transaksi");
+    } finally {
+      setIsTransactionsRefreshing(false);
+    }
+  }, [isTransactionsRefreshing, isUserLoading, user?.id]);
+  const handleRefresh = useCallback(() => {
+    void fetchTransactions();
+  }, [fetchTransactions]);
+  const withTransactionMutation = useCallback(
+    async (action: () => void | Promise<void>) => {
+      if (isTransactionMutating) return;
+      setIsTransactionMutating(true);
+      try {
+        await action();
+      } finally {
+        setIsTransactionMutating(false);
+      }
+    },
+    [isTransactionMutating]
+  );
+  const handleEdit = useCallback(
+    (id: string) => {
+      void withTransactionMutation(() => {
+        console.log("edit", id);
+      });
+    },
+    [withTransactionMutation]
+  );
+  const handleDelete = useCallback(
+    (id: string) => {
+      void withTransactionMutation(() => {
+        console.log("delete", id);
+      });
+    },
+    [withTransactionMutation]
+  );
   const filteredTransactions = useMemo(() => {
     return transactions.filter((t) => {
       const matchesType = filterType === "all" || t.type === filterType;
@@ -45,6 +106,11 @@ export default function TransactionPage({ data }: TransactionPageProps) {
       { totalIncome: 0, totalExpense: 0 }
     );
   }, [transactions]);
+  const { isPageLoading, isListLoading } = usePageLoadState({
+    isUserLoading,
+    itemsLength: transactions.length,
+    isRefreshing: isTransactionsRefreshing,
+  });
 
   return (
     <>
@@ -52,7 +118,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
         open={isOpen("transaction")}
         onClose={() => closeModal("transaction")}
         setForm={() => {}}
-        onSubmit={() => {}}
+        onSubmit={handleRefresh}
       />
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -78,6 +144,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
             totalCount={transactions.length}
             totalIncome={totalIncome}
             totalExpense={totalExpense}
+            isLoading={isPageLoading}
           />
 
           <FilterCard
@@ -86,12 +153,32 @@ export default function TransactionPage({ data }: TransactionPageProps) {
             searchQuery={searchQuery}
             onChangeSearch={setSearchQuery}
             onOpenAdvancedFilter={() => setShowAddModal(true)}
+            isDisabled={isPageLoading || isTransactionsRefreshing}
+            isRefreshing={isTransactionsRefreshing}
           />
+
+          {fetchError && !isPageLoading && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+              <p>{fetchError}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                className="mt-2"
+                disabled={isTransactionsRefreshing}
+              >
+                Coba lagi
+              </Button>
+            </div>
+          )}
 
           <TransactionTable
             transactions={filteredTransactions}
-            onEdit={(id) => console.log("edit", id)}
-            onDelete={(id) => console.log("delete", id)}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            isLoading={isListLoading}
+            isActionDisabled={isTransactionsRefreshing || isTransactionMutating}
           />
         </div>
       </main>
