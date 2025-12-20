@@ -1,7 +1,5 @@
 "use client";
-
 import React, { useMemo, useState, useEffect, useCallback } from "react";
-
 import FilterCard from "@/components/transactions/FilterCard";
 import TransactionTable from "@/components/transactions/TransactionTable";
 import HeaderCards from "./HeaderCard";
@@ -9,9 +7,12 @@ import { Transaction, TransactionType } from "@/lib/types/transaction";
 import AddTransaction from "./AddTransaction";
 import { useModalStore } from "@/store/useModalStore";
 import { useUser } from "../providers/UserProvider";
-import { get } from "@/lib/axios";
+import { del, get } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { usePageLoadState } from "@/hooks/usePageLoadState";
+import DialogDelete from "../DialogDelete";
+import { toastError, toastSuccess } from "@/lib/toast";
+import axios from "axios";
 
 interface TransactionPageProps {
   data: Transaction[];
@@ -23,6 +24,10 @@ export default function TransactionPage({ data }: TransactionPageProps) {
   const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showModalDelete, setShowModalDelete] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<
+    string | null
+  >(null);
   const [transactions, setTransactions] = useState<Transaction[]>(data);
   const [isTransactionsRefreshing, setIsTransactionsRefreshing] =
     useState(false);
@@ -75,10 +80,27 @@ export default function TransactionPage({ data }: TransactionPageProps) {
     },
     [withTransactionMutation]
   );
+  const handleConfirmDelete = useCallback((id: string) => {
+    setShowModalDelete(true);
+    setSelectedTransactionId(id);
+  }, []);
   const handleDelete = useCallback(
     (id: string) => {
-      void withTransactionMutation(() => {
-        console.log("delete", id);
+      void withTransactionMutation(async () => {
+        try {
+          await del(`/transactions/${id}`);
+          setTransactions((prev) => prev.filter((t) => t.id !== id));
+          setShowModalDelete(false);
+          setSelectedTransactionId(null);
+          toastSuccess("Transaksi berhasil dihapus");
+        } catch (error) {
+          if (axios.isAxiosError(error)) {
+            const message =
+              (error.response?.data as { error?: string })?.error ??
+              error.message;
+            toastError(message);
+          }
+        }
       });
     },
     [withTransactionMutation]
@@ -114,6 +136,15 @@ export default function TransactionPage({ data }: TransactionPageProps) {
 
   return (
     <>
+      {showModalDelete && (
+        <DialogDelete
+          open={showModalDelete}
+          title="Hapus Transaksi"
+          description="Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan."
+          onClose={() => setShowModalDelete(false)}
+          onDelete={() => handleDelete(selectedTransactionId!)}
+        />
+      )}
       <AddTransaction
         open={isOpen("transaction")}
         onClose={() => closeModal("transaction")}
@@ -176,7 +207,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
           <TransactionTable
             transactions={filteredTransactions}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={handleConfirmDelete}
             isLoading={isListLoading}
             isActionDisabled={isTransactionsRefreshing || isTransactionMutating}
           />

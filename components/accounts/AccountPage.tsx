@@ -280,7 +280,6 @@ const AccountPage: React.FC = () => {
     () => calculateAccountTotalsByCurrency(accounts),
     [accounts]
   );
-  // Gate all data-dependent sections to prevent empty states while user/accounts still loading.
   const isPageLoading = isUserLoading || isAccountsInitialLoading;
   const { openModal } = useModalStore();
   return (

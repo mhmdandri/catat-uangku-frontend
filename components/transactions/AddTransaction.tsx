@@ -14,8 +14,6 @@ import { useDeviceStore } from "@/store/useDeviceStore";
 import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { LoaderIcon, TrendingDown, TrendingUp } from "lucide-react";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
 import { Skeleton } from "../ui/skeleton";
 import { get, post } from "@/lib/axios";
 import axios from "axios";
@@ -25,13 +23,8 @@ import { toastError, toastSuccess } from "@/lib/toast";
 import { TransactionPayload } from "@/lib/types/transaction";
 import { Category } from "@/lib/types/category";
 import { Account } from "@/lib/types/account";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import ExpenseForm from "./ExpenseForm";
+import IncomeForm from "./IncomeForm";
 
 const createInitialForm = () => ({
   account: "",
@@ -162,10 +155,12 @@ const AddTransaction = ({
     (cat) => cat.type === transactionType
   );
 
-  // Block submit until the required option lists are ready to avoid empty/flicker states.
   const isInitialDataLoading = isAccountsLoading || isCategoriesLoading;
   const isFormBlocked =
-    isInitialDataLoading || isSubmitting || !!accountsError || !!categoriesError;
+    isInitialDataLoading ||
+    isSubmitting ||
+    !!accountsError ||
+    !!categoriesError;
   const isAccountFieldDisabled =
     isAccountsLoading || !!accountsError || isSubmitting;
 
@@ -311,146 +306,32 @@ const AddTransaction = ({
                       </TabsTrigger>
                     </TabsList>
                     <TabsContent value="expense" className="my-2 space-y-3">
-                      <div className="grid gap-2">
-                        <Label>Pilih Akun</Label>
-                        {isAccountsLoading ? (
-                          <Skeleton className="h-10 w-full" />
-                        ) : accountsError ? (
-                          renderFetchError(accountsError, fetchAccounts)
-                        ) : (
-                          <Select
-                            value={formData.account}
-                            onValueChange={(value) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                account: value,
-                              }))
-                            }
-                            disabled={isAccountFieldDisabled}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Pilih akun" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {accounts.map((account) => (
-                                <SelectItem key={account.id} value={account.id}>
-                                  {account.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Nominal</Label>
-                        <Input
-                          type="number"
-                          value={formData.amount}
-                          onChange={(e) =>
-                            handleInputChange("amount", e.target.value)
-                          }
-                          placeholder="10000"
-                          disabled={isSubmitting}
-                        ></Input>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Judul</Label>
-                        <Input
-                          type="text"
-                          value={formData.title}
-                          onChange={(e) =>
-                            handleInputChange("title", e.target.value)
-                          }
-                          placeholder="cth: beli kopi dan makan"
-                          disabled={isSubmitting}
-                        ></Input>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Category</Label>
-                        <div
-                          className={
-                            isSubmitting ? "pointer-events-none opacity-60" : ""
-                          }
-                        >
-                          {renderCategoryContent()}
-                        </div>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Deskripsi</Label>
-                        <Textarea
-                          value={formData.description}
-                          onChange={(e) =>
-                            handleInputChange("description", e.target.value)
-                          }
-                          placeholder="beli kopi dan makan di warung pak eko"
-                          disabled={isSubmitting}
-                        ></Textarea>
-                      </div>
+                      <ExpenseForm
+                        isAccountsLoading={isAccountsLoading}
+                        accountsError={accountsError}
+                        isAccountFieldDisabled={isAccountFieldDisabled}
+                        formData={formData}
+                        isSubmitting={isSubmitting}
+                        fetchAccounts={fetchAccounts}
+                        handleInputChange={handleInputChange}
+                        renderCategoryContent={renderCategoryContent}
+                        accounts={accounts}
+                        renderFetchError={renderFetchError}
+                      />
                     </TabsContent>
                     <TabsContent value="income" className="my-2 space-y-3">
-                      <div className="grid gap-2">
-                        <Label>Pilih Akun</Label>
-                        {isAccountsLoading ? (
-                          <Skeleton className="h-10 w-full" />
-                        ) : accountsError ? (
-                          renderFetchError(accountsError, fetchAccounts)
-                        ) : (
-                          <Input
-                            type="text"
-                            value={formData.account}
-                            onChange={(e) =>
-                              handleInputChange("account", e.target.value)
-                            }
-                            placeholder="cth: gaji bulanan"
-                            disabled={isAccountFieldDisabled}
-                          />
-                        )}
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Nominal</Label>
-                        <Input
-                          type="number"
-                          value={formData.amount}
-                          onChange={(e) =>
-                            handleInputChange("amount", e.target.value)
-                          }
-                          placeholder="10000"
-                          disabled={isSubmitting}
-                        ></Input>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Judul</Label>
-                        <Input
-                          type="text"
-                          value={formData.title}
-                          onChange={(e) =>
-                            handleInputChange("title", e.target.value)
-                          }
-                          placeholder="cth: gaji bulanan"
-                          disabled={isSubmitting}
-                        ></Input>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Category</Label>
-                        <div
-                          className={
-                            isSubmitting ? "pointer-events-none opacity-60" : ""
-                          }
-                        >
-                          {renderCategoryContent()}
-                        </div>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label>Deskripsi</Label>
-                        <Textarea
-                          value={formData.description}
-                          onChange={(e) =>
-                            handleInputChange("description", e.target.value)
-                          }
-                          placeholder="gaji bulan ini"
-                          disabled={isSubmitting}
-                        ></Textarea>
-                      </div>
+                      <IncomeForm
+                        accounts={accounts}
+                        isAccountsLoading={isAccountsLoading}
+                        accountsError={accountsError}
+                        isAccountFieldDisabled={isAccountFieldDisabled}
+                        formData={formData}
+                        isSubmitting={isSubmitting}
+                        fetchAccounts={fetchAccounts}
+                        handleInputChange={handleInputChange}
+                        renderCategoryContent={renderCategoryContent}
+                        renderFetchError={renderFetchError}
+                      />
                     </TabsContent>
                   </Tabs>
                 </div>
@@ -463,9 +344,7 @@ const AddTransaction = ({
               className="w-full sm:w-auto"
               disabled={isFormBlocked}
             >
-              {isSubmitting && (
-                <LoaderIcon className="h-4 w-4 animate-spin" />
-              )}
+              {isSubmitting && <LoaderIcon className="h-4 w-4 animate-spin" />}
               Save changes
             </Button>
             <SheetClose asChild>

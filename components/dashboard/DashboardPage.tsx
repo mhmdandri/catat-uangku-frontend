@@ -16,8 +16,11 @@ import { CategoryExpenseChart } from "@/components/dashboard/CategoryChart";
 import { RecentTransactionsCard } from "@/components/dashboard/RecentTrxCard";
 import { GoalsCard } from "@/components/dashboard/GoalsCard";
 import { BudgetCard } from "@/components/dashboard/BudgetCard";
+import AddTransaction from "@/components/transactions/AddTransaction";
+import { useModalStore } from "@/store/useModalStore";
 
 export default function DashboardPage() {
+  const { isOpen, closeModal } = useModalStore();
   const userData = {
     totalBalance: 12500000,
     totalIncome: 8000000,
@@ -179,6 +182,12 @@ export default function DashboardPage() {
 
   return (
     <>
+      <AddTransaction
+        open={isOpen("transaction")}
+        onClose={() => closeModal("transaction")}
+        setForm={() => {}}
+        onSubmit={() => {}}
+      />
       <div className="mb-4 sm:mb-6 grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {balanceCards.map((card) => (
           <TitleCard

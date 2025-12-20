@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   accountTypeStyles,
   buildAccountNumber,
@@ -181,49 +182,53 @@ export const AccountCard: React.FC<AccountCardProps> = ({
                 {transactionsError}
               </p>
             ) : transactions.length > 0 ? (
-              transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-white/5 p-2"
-                >
-                  <div className="flex items-center gap-2">
+              <ScrollArea className="h-44 w-full pr-1">
+                <div className="space-y-2 pr-2">
+                  {transactions.map((transaction) => (
                     <div
-                      className={`rounded p-1 ${
-                        transaction.type === "income"
-                          ? "bg-emerald-100"
-                          : "bg-red-100"
-                      }`}
+                      key={transaction.id}
+                      className="flex items-center justify-between rounded-lg bg-gray-50 dark:bg-white/5 p-2"
                     >
-                      {transaction.type === "income" ? (
-                        <ArrowDownRight className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <ArrowUpRight className="h-4 w-4 text-red-600" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm text-foreground">
-                        {transaction.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {transaction.date}
-                      </p>
-                    </div>
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`rounded p-1 ${
+                            transaction.type === "income"
+                              ? "bg-emerald-100"
+                              : "bg-red-100"
+                          }`}
+                        >
+                          {transaction.type === "income" ? (
+                            <ArrowDownRight className="h-4 w-4 text-emerald-600" />
+                          ) : (
+                            <ArrowUpRight className="h-4 w-4 text-red-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm text-foreground">
+                            {transaction.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {transaction.date}
+                          </p>
+                        </div>
+                      </div>
 
-                  <p
-                    className={`shrink-0 text-sm ${
-                      transaction.type === "income"
-                        ? "text-emerald-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {transaction.type === "income" ? "+" : "-"} Rp{" "}
-                    {Math.abs(transaction.total_amount ?? 0).toLocaleString(
-                      "id-ID"
-                    )}
-                  </p>
+                      <p
+                        className={`shrink-0 text-sm ${
+                          transaction.type === "income"
+                            ? "text-emerald-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {transaction.type === "income" ? "+" : "-"} Rp{" "}
+                        {Math.abs(transaction.total_amount ?? 0).toLocaleString(
+                          "id-ID"
+                        )}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))
+              </ScrollArea>
             ) : (
               <p className="py-4 text-center text-sm text-muted-foreground">
                 Belum ada transaksi
