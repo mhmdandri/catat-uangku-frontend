@@ -39,7 +39,6 @@ export type TransactionPayload = {
   group_id?: string | null;
   category_id: string;
   account_id: string;
-  created_by_user_id: string;
   date?: string;
   title: string;
   type: TransactionType;

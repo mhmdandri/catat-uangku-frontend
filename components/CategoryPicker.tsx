@@ -4,6 +4,25 @@ import type { TransactionType } from "@/lib/types/transaction";
 import { Check, Plus, Search, X, ChevronDown, ChevronUp } from "lucide-react";
 import CategoryIcon from "./ui/CategoryIcon";
 import { useDeviceStore } from "@/store/useDeviceStore";
+
+const getContrastColor = (color?: string | null) => {
+  if (!color || color[0] !== "#") return undefined;
+  const hex = color.slice(1);
+  if (hex.length !== 3 && hex.length !== 6) return undefined;
+  const normalized =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : hex;
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  if ([r, g, b].some((v) => Number.isNaN(v))) return undefined;
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 160 ? "#111827" : "#F9FAFB";
+};
 interface CategoryPickerProps {
   data: Category[];
   selectedCategory?: Category;
@@ -45,6 +64,8 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
 
   const canShowMore = !isSearching && visibleCount < filteredCategories.length;
   const canShowLess = !isSearching && visibleCount > initialVisibleCount;
+  const shouldShowAdd =
+    showAddNew && !!onAddNew && (canShowLess || !canShowMore);
 
   return (
     <div className="space-y-3">
@@ -81,6 +102,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {visibleCategories.map((category) => {
           const isSelected = selectedCategory?.id === category.id;
+          const iconColor = getContrastColor(category.color) ?? category.color;
           return (
             <button
               key={category.id}
@@ -99,15 +121,18 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
               )}
 
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                  category.color
-                } transition-transform duration-200 ${
+                className={`flex h-9 w-9 items-center justify-center rounded-lg bg-muted transition-transform duration-200 ${
                   isSelected ? "scale-110" : "group-hover:scale-105"
                 }`}
+                style={
+                  category.color
+                    ? { backgroundColor: category.color }
+                    : undefined
+                }
               >
                 <CategoryIcon
                   iconName={category.icon}
-                  color={category.color}
+                  color={iconColor}
                   size={18}
                   showBackground={false}
                 />
@@ -124,7 +149,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
           );
         })}
 
-        {showAddNew && onAddNew && (
+        {shouldShowAdd && (
           <button
             onClick={onAddNew}
             type="button"
@@ -158,7 +183,7 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
               onClick={() => setVisibleCount(initialVisibleCount)}
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
             >
-              Show less <ChevronUp className="h-4 w-4" />
+              lebih sedikit <ChevronUp className="h-4 w-4" />
             </button>
           )}
         </div>

@@ -57,10 +57,8 @@ export const shouldFetchTransactions = (
   !transactionsByAccount[accountId] && !transactionsLoading[accountId];
 
 export const createAccountPayload = (
-  formData: AddAccountFormData,
-  userId: string
+  formData: AddAccountFormData
 ): AccountPayload => ({
-  owner_user_id: userId,
   name: formData.name,
   type: formData.type,
   first_balance: formData.first_balance || 0,

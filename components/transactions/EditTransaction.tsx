@@ -15,43 +15,54 @@ import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { LoaderIcon, TrendingDown, TrendingUp } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
-import { get, post } from "@/lib/axios";
+import { get, put } from "@/lib/axios";
 import axios from "axios";
 import { CategoryPicker } from "../CategoryPicker";
 import { useUser } from "../providers/UserProvider";
 import { toastError, toastSuccess } from "@/lib/toast";
-import { TransactionPayload } from "@/lib/types/transaction";
-import { Category } from "@/lib/types/category";
-import { Account, Scope } from "@/lib/types/account";
+import type {
+  Transaction,
+  TransactionPayload,
+  TransactionType,
+} from "@/lib/types/transaction";
+import type { Category } from "@/lib/types/category";
+import type { Account } from "@/lib/types/account";
 import ExpenseForm from "./ExpenseForm";
 import IncomeForm from "./IncomeForm";
 import AddCategoryModal from "../categories/AddCategoryModal";
 
-const createInitialForm = (scope: Scope) => ({
-  account: "",
-  amount: "",
-  title: "",
-  description: "",
-  date: new Date().toISOString(),
-  scope,
+const buildInitialForm = (transaction?: Transaction | null) => ({
+  account: transaction?.transaction_lines?.[0]?.account_id ?? "",
+  amount: transaction ? String(Math.abs(transaction.total_amount ?? 0)) : "",
+  title: transaction?.title ?? "",
+  description: transaction?.description ?? "",
+  date: transaction?.date ?? new Date().toISOString(),
+  scope: transaction?.scope ?? "personal",
 });
 
-interface AddTransactionProps {
+const buildFallbackCategory = (transaction: Transaction): Category => ({
+  id: transaction.category_id,
+  group_id: transaction.group_id ?? null,
+  owner_user_id: null,
+  name: transaction.category?.name ?? "Kategori",
+  type: transaction.type,
+  color: transaction.category?.color ?? undefined,
+  icon: transaction.category?.icon ?? "Circle",
+});
+
+interface EditTransactionProps {
   open: boolean;
-  setForm: (form: TransactionPayload) => void;
+  transaction?: Transaction | null;
   onClose: () => void;
   onSubmit: () => void;
-  scope?: Scope;
-  groupId?: string | null;
 }
-const AddTransaction = ({
+
+const EditTransaction = ({
   open,
+  transaction,
   onClose,
   onSubmit,
-  setForm,
-  scope = "personal",
-  groupId = null,
-}: AddTransactionProps) => {
+}: EditTransactionProps) => {
   const { isMobile } = useDeviceStore();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
@@ -61,33 +72,32 @@ const AddTransaction = ({
   const [accountsError, setAccountsError] = useState<string | null>(null);
   const { user, isLoading: isUserLoading } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [transactionType, setTransactionType] = useState<"expense" | "income">(
-    "expense"
-  );
+  const [transactionType, setTransactionType] =
+    useState<TransactionType>("expense");
   const [selectedCategory, setSelectedCategory] = useState<
     Category | undefined
   >();
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [formData, setFormData] = useState(() => createInitialForm(scope));
+  const [formData, setFormData] = useState(() => buildInitialForm(transaction));
+  const [groupId, setGroupId] = useState<string | null>(
+    transaction?.group_id ?? null
+  );
   const scopedAccounts = useMemo(() => {
-    if (scope === "group") {
+    if (!transaction) return accounts;
+    if (formData.scope === "group") {
       if (!groupId) return [];
       return accounts.filter(
         (account) => account.scope === "group" && account.group_id === groupId
       );
     }
     return accounts.filter((account) => account.scope === "personal");
-  }, [accounts, groupId, scope]);
-  const scopedAccountsError =
-    accountsError ??
-    (scope === "group" && !groupId ? "Group tidak ditemukan" : null);
+  }, [accounts, formData.scope, groupId, transaction]);
 
   const fetchCategories = useCallback(async () => {
     setIsCategoriesLoading(true);
     setCategoriesError(null);
     try {
       const res = await get<{ data: Category[] }>("/categories");
-      console.log(res.data);
       setCategories(res.data ?? []);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -116,7 +126,6 @@ const AddTransaction = ({
     setAccountsError(null);
     try {
       const res = await get<{ data: Account[] }>(`/accounts/user/${user.id}`);
-      console.log(res.data);
       setAccounts(res.data ?? []);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -130,19 +139,29 @@ const AddTransaction = ({
   }, [user?.id, isUserLoading]);
 
   useEffect(() => {
-    if (!scopedAccounts.length) return;
-    if (
-      !formData.account ||
-      !scopedAccounts.some((acc) => acc.id === formData.account)
-    ) {
-      setFormData((prev) => ({ ...prev, account: scopedAccounts[0].id }));
-    }
-  }, [formData.account, scopedAccounts]);
+    if (!open) return;
+    void fetchCategories();
+  }, [fetchCategories, open]);
 
   useEffect(() => {
     if (!open) return;
-    setFormData((prev) => ({ ...prev, scope }));
-  }, [open, scope]);
+    void fetchAccounts();
+  }, [fetchAccounts, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (!transaction) {
+      setFormData(buildInitialForm());
+      setSelectedCategory(undefined);
+      setTransactionType("expense");
+      setGroupId(null);
+      return;
+    }
+    setFormData(buildInitialForm(transaction));
+    setTransactionType(transaction.type);
+    setSelectedCategory(buildFallbackCategory(transaction));
+    setGroupId(transaction.group_id ?? null);
+  }, [open, transaction]);
 
   useEffect(() => {
     if (!open) {
@@ -151,25 +170,14 @@ const AddTransaction = ({
   }, [open]);
 
   useEffect(() => {
-    void fetchCategories();
-  }, [fetchCategories]);
-
-  useEffect(() => {
-    void fetchAccounts();
-  }, [fetchAccounts]);
-
-  useEffect(() => {
-    if (selectedCategory) {
-      setForm({
-        ...formData,
-        type: transactionType,
-        category_id: selectedCategory.id,
-        account_id: formData.account,
-        total_amount: Number(formData.amount),
-        ...(scope === "group" && groupId ? { group_id: groupId } : {}),
-      } as TransactionPayload);
+    if (!scopedAccounts.length || !open) return;
+    if (
+      !formData.account ||
+      !scopedAccounts.some((acc) => acc.id === formData.account)
+    ) {
+      setFormData((prev) => ({ ...prev, account: scopedAccounts[0].id }));
     }
-  }, [formData, groupId, scope, selectedCategory, setForm, transactionType]);
+  }, [formData.account, open, scopedAccounts]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -179,7 +187,7 @@ const AddTransaction = ({
     setSelectedCategory(category);
   };
 
-  const handleTypeChange = (type: "expense" | "income") => {
+  const handleTypeChange = (type: TransactionType) => {
     setTransactionType(type);
     setSelectedCategory(undefined);
   };
@@ -198,22 +206,26 @@ const AddTransaction = ({
     [setCategories]
   );
 
-  const filteredCategories = categories.filter(
-    (cat) => cat.type === transactionType
-  );
+  const filteredCategories = useMemo(() => {
+    const byType = categories.filter((cat) => cat.type === transactionType);
+    if (
+      selectedCategory &&
+      !byType.some((cat) => cat.id === selectedCategory.id)
+    ) {
+      return [selectedCategory, ...byType];
+    }
+    return byType;
+  }, [categories, selectedCategory, transactionType]);
 
   const isInitialDataLoading = isAccountsLoading || isCategoriesLoading;
   const isFormBlocked =
     isInitialDataLoading ||
     isSubmitting ||
-    !!scopedAccountsError ||
+    !!accountsError ||
     !!categoriesError ||
-    scopedAccounts.length === 0;
+    !transaction;
   const isAccountFieldDisabled =
-    isAccountsLoading ||
-    !!scopedAccountsError ||
-    isSubmitting ||
-    scopedAccounts.length === 0;
+    isAccountsLoading || !!accountsError || isSubmitting || !scopedAccounts.length;
 
   const renderFetchError = (message: string, onRetry: () => void) => (
     <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
@@ -265,19 +277,13 @@ const AddTransaction = ({
     );
   };
 
-  const resetForm = useCallback(() => {
-    setFormData(createInitialForm(scope));
-    setSelectedCategory(undefined);
-    setTransactionType("expense");
-  }, [scope]);
-
   const handleSubmit = async () => {
-    if (isFormBlocked) return;
+    if (isFormBlocked || !transaction) return;
     if (!selectedCategory?.id) {
       toastError("Kategori wajib dipilih");
       return;
     }
-    if (scope === "group" && !groupId) {
+    if (formData.scope === "group" && !groupId) {
       toastError("Group tidak ditemukan");
       return;
     }
@@ -295,8 +301,7 @@ const AddTransaction = ({
       }
     }
     const payload: TransactionPayload = {
-      category_id: selectedCategory?.id ?? "",
-      date: formData.date,
+      category_id: selectedCategory.id,
       title: formData.title,
       account_id: formData.account,
       type: transactionType,
@@ -304,20 +309,21 @@ const AddTransaction = ({
       scope: formData.scope,
       description: formData.description,
     };
-    if (scope === "group") {
+    if (formData.scope === "group") {
       payload.group_id = groupId;
     }
-    console.log("Submitting payload:", payload);
     setIsSubmitting(true);
     try {
-      await post<TransactionPayload>("/transactions", payload);
-      toastSuccess("Berhasil membuat transaksi");
-      resetForm();
+      await put(`/transactions/${transaction.id}`, payload);
+      toastSuccess("Berhasil memperbarui transaksi");
       onClose();
       onSubmit();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const message = error.response?.data?.message || error.message;
+        const message =
+          (error.response?.data as { error?: string })?.error ??
+          error.response?.data?.message ??
+          error.message;
         toastError(message);
       }
     } finally {
@@ -332,14 +338,13 @@ const AddTransaction = ({
         onClose={() => setShowAddCategory(false)}
         onCreated={handleCategoryCreated}
         defaultType={transactionType}
-        scope={scope}
+        scope={formData.scope}
         groupId={groupId}
       />
       <Sheet
         open={open}
         onOpenChange={(isOpen) => {
           if (!isOpen && !isSubmitting) {
-            resetForm();
             onClose();
           }
         }}
@@ -352,74 +357,80 @@ const AddTransaction = ({
           ].join(" ")}
         >
           <SheetHeader>
-            <SheetTitle>Buat transaksi baru</SheetTitle>
+            <SheetTitle>Edit transaksi</SheetTitle>
             <SheetDescription>
-              Isi detail transaksi kamu di form berikut dan simpan untuk
-              menambahkannya
+              Ubah detail transaksi kamu di form berikut lalu simpan
+              perubahannya
             </SheetDescription>
           </SheetHeader>
           <div className="flex-1 min-h-0 overflow-y-auto px-4">
-            <div className="grid flex-1 auto-rows-min gap-5 sm:gap-6">
-              <div className="grid gap-3">
-                <Label>Jenis Transaksi</Label>
-                <div className="w-full">
-                  <Tabs
-                    value={transactionType}
-                    onValueChange={(value) =>
-                      handleTypeChange(value as "expense" | "income")
-                    }
-                    className="w-full"
-                  >
-                    <TabsList className="w-full grid grid-cols-2">
-                      <TabsTrigger
-                        value="expense"
-                        className="w-full flex gap-4 items-center self-center"
-                        disabled={isSubmitting}
-                      >
-                        <TrendingDown className="text-red-500" />
-                        Pengeluaran
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="income"
-                        className="w-full flex gap-4 items-center self-center"
-                        disabled={isSubmitting}
-                      >
-                        <TrendingUp className="text-green-500" />
-                        Pemasukan
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="expense" className="my-2 space-y-3">
-                      <ExpenseForm
-                        isAccountsLoading={isAccountsLoading}
-                        accountsError={scopedAccountsError}
-                        isAccountFieldDisabled={isAccountFieldDisabled}
-                        formData={formData}
-                        isSubmitting={isSubmitting}
-                        fetchAccounts={fetchAccounts}
-                        handleInputChange={handleInputChange}
-                        renderCategoryContent={renderCategoryContent}
-                        accounts={accounts}
-                        renderFetchError={renderFetchError}
-                      />
-                    </TabsContent>
-                    <TabsContent value="income" className="my-2 space-y-3">
-                      <IncomeForm
-                        accounts={accounts}
-                        isAccountsLoading={isAccountsLoading}
-                        accountsError={scopedAccountsError}
-                        isAccountFieldDisabled={isAccountFieldDisabled}
-                        formData={formData}
-                        isSubmitting={isSubmitting}
-                        fetchAccounts={fetchAccounts}
-                        handleInputChange={handleInputChange}
-                        renderCategoryContent={renderCategoryContent}
-                        renderFetchError={renderFetchError}
-                      />
-                    </TabsContent>
-                  </Tabs>
+            {!transaction ? (
+              <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                Transaksi tidak ditemukan.
+              </div>
+            ) : (
+              <div className="grid flex-1 auto-rows-min gap-5 sm:gap-6">
+                <div className="grid gap-3">
+                  <Label>Jenis Transaksi</Label>
+                  <div className="w-full">
+                    <Tabs
+                      value={transactionType}
+                      onValueChange={(value) =>
+                        handleTypeChange(value as TransactionType)
+                      }
+                      className="w-full"
+                    >
+                      <TabsList className="w-full grid grid-cols-2">
+                        <TabsTrigger
+                          value="expense"
+                          className="w-full flex gap-4 items-center self-center"
+                          disabled={isSubmitting}
+                        >
+                          <TrendingDown className="text-red-500" />
+                          Pengeluaran
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="income"
+                          className="w-full flex gap-4 items-center self-center"
+                          disabled={isSubmitting}
+                        >
+                          <TrendingUp className="text-green-500" />
+                          Pemasukan
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="expense" className="my-2 space-y-3">
+                        <ExpenseForm
+                          isAccountsLoading={isAccountsLoading}
+                          accountsError={accountsError}
+                          isAccountFieldDisabled={isAccountFieldDisabled}
+                          formData={formData}
+                          isSubmitting={isSubmitting}
+                          fetchAccounts={fetchAccounts}
+                          handleInputChange={handleInputChange}
+                          renderCategoryContent={renderCategoryContent}
+                          accounts={scopedAccounts}
+                          renderFetchError={renderFetchError}
+                        />
+                      </TabsContent>
+                      <TabsContent value="income" className="my-2 space-y-3">
+                        <IncomeForm
+                          accounts={scopedAccounts}
+                          isAccountsLoading={isAccountsLoading}
+                          accountsError={accountsError}
+                          isAccountFieldDisabled={isAccountFieldDisabled}
+                          formData={formData}
+                          isSubmitting={isSubmitting}
+                          fetchAccounts={fetchAccounts}
+                          handleInputChange={handleInputChange}
+                          renderCategoryContent={renderCategoryContent}
+                          renderFetchError={renderFetchError}
+                        />
+                      </TabsContent>
+                    </Tabs>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
           <SheetFooter className="flex gap-2 flex-col">
             <Button
@@ -446,4 +457,4 @@ const AddTransaction = ({
   );
 };
 
-export default AddTransaction;
+export default EditTransaction;

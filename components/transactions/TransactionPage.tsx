@@ -5,6 +5,7 @@ import TransactionTable from "@/components/transactions/TransactionTable";
 import HeaderCards from "./HeaderCard";
 import { Transaction, TransactionType } from "@/lib/types/transaction";
 import AddTransaction from "./AddTransaction";
+import EditTransaction from "./EditTransaction";
 import { useModalStore } from "@/store/useModalStore";
 import { useUser } from "../providers/UserProvider";
 import { del, get } from "@/lib/axios";
@@ -19,7 +20,7 @@ interface TransactionPageProps {
 }
 
 export default function TransactionPage({ data }: TransactionPageProps) {
-  const { isOpen, closeModal } = useModalStore();
+  const { isOpen, closeModal, openModal } = useModalStore();
   const { user, isLoading: isUserLoading } = useUser();
   const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,12 +75,15 @@ export default function TransactionPage({ data }: TransactionPageProps) {
   );
   const handleEdit = useCallback(
     (id: string) => {
-      void withTransactionMutation(() => {
-        console.log("edit", id);
-      });
+      setSelectedTransactionId(id);
+      openModal("editTransaction");
     },
-    [withTransactionMutation]
+    [openModal]
   );
+  const handleCloseEdit = useCallback(() => {
+    closeModal("editTransaction");
+    setSelectedTransactionId(null);
+  }, [closeModal]);
   const handleConfirmDelete = useCallback((id: string) => {
     setShowModalDelete(true);
     setSelectedTransactionId(id);
@@ -116,6 +120,10 @@ export default function TransactionPage({ data }: TransactionPageProps) {
       return matchesType && matchesSearch;
     });
   }, [transactions, filterType, searchQuery]);
+  const selectedTransaction = useMemo(
+    () => transactions.find((t) => t.id === selectedTransactionId) ?? null,
+    [transactions, selectedTransactionId]
+  );
 
   const { totalIncome, totalExpense } = useMemo(() => {
     return transactions.reduce(
@@ -149,6 +157,12 @@ export default function TransactionPage({ data }: TransactionPageProps) {
         open={isOpen("transaction")}
         onClose={() => closeModal("transaction")}
         setForm={() => {}}
+        onSubmit={handleRefresh}
+      />
+      <EditTransaction
+        open={isOpen("editTransaction")}
+        transaction={selectedTransaction}
+        onClose={handleCloseEdit}
         onSubmit={handleRefresh}
       />
       {showAddModal && (

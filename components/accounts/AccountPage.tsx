@@ -175,7 +175,7 @@ const AccountPage: React.FC = () => {
       setIsAccountMutating(true);
       setFetchError(null);
       try {
-        const payload = createAccountPayload(formData, user.id);
+        const payload = createAccountPayload(formData);
         await post("/accounts", payload);
         const refreshed = await get<{ data: Account[] }>(
           `/accounts/user/${user.id}`

@@ -46,7 +46,6 @@ export type AddAccountFormData = {
   first_balance: number;
 };
 export type AccountPayload = {
-  owner_user_id: string;
   group_id?: string | null;
   name: string;
   type: AccountType;
