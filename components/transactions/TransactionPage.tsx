@@ -10,6 +10,7 @@ import { useModalStore } from "@/store/useModalStore";
 import { useUser } from "../providers/UserProvider";
 import { del, get } from "@/lib/axios";
 import { Button } from "@/components/ui/button";
+import TransactionDateFilterDialog from "./TransactionDateFilterDialog";
 import { usePageLoadState } from "@/hooks/usePageLoadState";
 import DialogDelete from "../DialogDelete";
 import { toastError, toastSuccess } from "@/lib/toast";
@@ -19,17 +20,25 @@ interface TransactionPageProps {
   data: Transaction[];
 }
 
+type DateRange = {
+  start?: string;
+  end?: string;
+};
+
 export default function TransactionPage({ data }: TransactionPageProps) {
   const { isOpen, closeModal, openModal } = useModalStore();
   const { user, isLoading: isUserLoading } = useUser();
   const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [selectedTransactionId, setSelectedTransactionId] = useState<
     string | null
   >(null);
   const [transactions, setTransactions] = useState<Transaction[]>(data);
+  const [dateRange, setDateRange] = useState<DateRange>({});
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
   const [isTransactionsRefreshing, setIsTransactionsRefreshing] =
     useState(false);
   const [isTransactionMutating, setIsTransactionMutating] = useState(false);
@@ -37,30 +46,72 @@ export default function TransactionPage({ data }: TransactionPageProps) {
   useEffect(() => {
     setTransactions(data);
   }, [data]);
-  const fetchTransactions = useCallback(async () => {
-    if (isTransactionsRefreshing) return;
-    if (!user?.id) {
-      if (!isUserLoading) {
-        setFetchError("Pengguna tidak ditemukan");
+  const buildDateQuery = useCallback((range?: DateRange) => {
+    const params = new URLSearchParams();
+    if (range?.start) params.set("start_date", range.start);
+    if (range?.end) params.set("end_date", range.end);
+    const query = params.toString();
+    return query ? `?${query}` : "";
+  }, []);
+  const fetchTransactions = useCallback(
+    async (range?: DateRange) => {
+      if (isTransactionsRefreshing) return;
+      if (!user?.id) {
+        if (!isUserLoading) {
+          setFetchError("Pengguna tidak ditemukan");
+        }
+        return;
       }
-      return;
-    }
-    setIsTransactionsRefreshing(true);
-    setFetchError(null);
-    try {
-      const res = await get<{ data: Transaction[] }>(
-        `/transactions/user/${user.id}`
-      );
-      setTransactions(res.data ?? []);
-    } catch {
-      setFetchError("Gagal memuat transaksi");
-    } finally {
-      setIsTransactionsRefreshing(false);
-    }
-  }, [isTransactionsRefreshing, isUserLoading, user?.id]);
+      setIsTransactionsRefreshing(true);
+      setFetchError(null);
+      try {
+        const query = buildDateQuery(range ?? dateRange);
+        const res = await get<{ data: Transaction[] }>(
+          `/transactions/user/${user.id}${query}`
+        );
+        setTransactions(res.data ?? []);
+      } catch {
+        setFetchError("Gagal memuat transaksi");
+      } finally {
+        setIsTransactionsRefreshing(false);
+      }
+    },
+    [
+      buildDateQuery,
+      dateRange,
+      isTransactionsRefreshing,
+      isUserLoading,
+      user?.id,
+    ]
+  );
   const handleRefresh = useCallback(() => {
     void fetchTransactions();
   }, [fetchTransactions]);
+  const openFilterModal = useCallback(() => {
+    setFilterStartDate(dateRange.start ?? "");
+    setFilterEndDate(dateRange.end ?? "");
+    setShowFilterModal(true);
+  }, [dateRange.end, dateRange.start]);
+  const handleApplyDateFilter = useCallback(() => {
+    const nextRange: DateRange = {
+      start: filterStartDate || undefined,
+      end: filterEndDate || undefined,
+    };
+    setDateRange(nextRange);
+    setShowFilterModal(false);
+    void fetchTransactions(nextRange);
+  }, [fetchTransactions, filterEndDate, filterStartDate]);
+  const handleResetDateFilter = useCallback(() => {
+    setFilterStartDate("");
+    setFilterEndDate("");
+    setDateRange({});
+    setShowFilterModal(false);
+    void fetchTransactions({});
+  }, [fetchTransactions]);
+  const isDateRangeInvalid =
+    filterStartDate.length > 0 &&
+    filterEndDate.length > 0 &&
+    new Date(filterEndDate) < new Date(filterStartDate);
   const withTransactionMutation = useCallback(
     async (action: () => void | Promise<void>) => {
       if (isTransactionMutating) return;
@@ -165,24 +216,18 @@ export default function TransactionPage({ data }: TransactionPageProps) {
         onClose={handleCloseEdit}
         onSubmit={handleRefresh}
       />
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-background p-6 text-foreground shadow-lg">
-            <h3 className="mb-2 text-xl font-semibold">
-              Tambah Transaksi Baru
-            </h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Form tambah transaksi akan ditampilkan di sini
-            </p>
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-white transition hover:bg-emerald-700"
-            >
-              Tutup
-            </button>
-          </div>
-        </div>
-      )}
+      <TransactionDateFilterDialog
+        open={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        startDate={filterStartDate}
+        endDate={filterEndDate}
+        onStartDateChange={setFilterStartDate}
+        onEndDateChange={setFilterEndDate}
+        onApply={handleApplyDateFilter}
+        onReset={handleResetDateFilter}
+        isRangeInvalid={isDateRangeInvalid}
+        isRefreshing={isTransactionsRefreshing}
+      />
       <main className="flex-1 overflow-y-auto">
         <div className="space-y-6">
           <HeaderCards
@@ -197,7 +242,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
             onChangeFilter={setFilterType}
             searchQuery={searchQuery}
             onChangeSearch={setSearchQuery}
-            onOpenAdvancedFilter={() => setShowAddModal(true)}
+            onOpenAdvancedFilter={openFilterModal}
             isDisabled={isPageLoading || isTransactionsRefreshing}
             isRefreshing={isTransactionsRefreshing}
           />

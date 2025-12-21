@@ -153,12 +153,12 @@ export const CategoryPicker: React.FC<CategoryPickerProps> = ({
           <button
             onClick={onAddNew}
             type="button"
-            className="group flex flex-col items-center gap-1 rounded-lg border border-dashed border-gray-300 bg-gray-50 p-2 transition hover:border-emerald-400 hover:bg-emerald-50"
+            className="group flex flex-col items-center gap-1 rounded-lg border border-dashed border-border bg-muted/40 p-2 transition hover:border-emerald-500/60 hover:bg-emerald-500/10"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-200 transition group-hover:bg-emerald-100">
-              <Plus className="h-5 w-5 text-gray-500 transition-colors group-hover:text-emerald-600" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted transition group-hover:bg-emerald-500/15">
+              <Plus className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-emerald-600 dark:group-hover:text-emerald-400" />
             </div>
-            <p className="text-center text-xs text-gray-600 group-hover:text-emerald-700">
+            <p className="text-center text-xs text-muted-foreground transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
               Tambah
             </p>
           </button>

@@ -38,11 +38,11 @@ export default function FilterCard({
             />
           </div>
 
-          <div className="flex flex-wrap gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
             <Button
               variant={filterType === "all" ? "default" : "outline"}
               onClick={() => onChangeFilter("all")}
-              className="h-9"
+              className="h-9 w-full sm:w-auto"
               disabled={isDisabled}
             >
               Semua
@@ -50,7 +50,7 @@ export default function FilterCard({
             <Button
               variant={filterType === "income" ? "default" : "outline"}
               onClick={() => onChangeFilter("income")}
-              className="h-9"
+              className="h-9 w-full sm:w-auto"
               disabled={isDisabled}
             >
               Pemasukan
@@ -58,7 +58,7 @@ export default function FilterCard({
             <Button
               variant={filterType === "expense" ? "default" : "outline"}
               onClick={() => onChangeFilter("expense")}
-              className="h-9"
+              className="h-9 w-full sm:w-auto"
               disabled={isDisabled}
             >
               Pengeluaran
@@ -67,7 +67,7 @@ export default function FilterCard({
             <Button
               variant="outline"
               onClick={onOpenAdvancedFilter}
-              className="h-9 gap-2"
+              className="h-9 w-full gap-2 sm:w-auto"
               disabled={isDisabled}
             >
               {isRefreshing ? (

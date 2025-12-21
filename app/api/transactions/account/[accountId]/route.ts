@@ -6,5 +6,6 @@ export async function GET(
   { params }: { params: Promise<{ accountId: string }> }
 ) {
   const { accountId } = await params;
-  return proxyJson(req, { path: `/transactions/account/${accountId}` });
+  const query = req.nextUrl.search;
+  return proxyJson(req, { path: `/transactions/account/${accountId}${query}` });
 }

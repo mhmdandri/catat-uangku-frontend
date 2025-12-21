@@ -1,23 +1,27 @@
 import type { NextConfig } from "next";
+import type { RemotePattern } from "next/dist/shared/lib/image-config";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-let backendPattern:
-  | {
-      protocol: string;
-      hostname: string;
-      port?: string;
-      pathname?: string;
-    }
-  | undefined;
+const remotePatterns: RemotePattern[] = [
+  {
+    protocol: "https",
+    hostname: "images.unsplash.com",
+  },
+];
 
 if (apiUrl) {
   try {
     const url = new URL(apiUrl);
-    backendPattern = {
-      protocol: url.protocol.replace(":", ""),
-      hostname: url.hostname,
-    };
-    if (url.port) backendPattern.port = url.port;
+    const protocol =
+      url.protocol === "http:" ? "http" : url.protocol === "https:" ? "https" : undefined;
+    if (protocol) {
+      const backendPattern: RemotePattern = {
+        protocol,
+        hostname: url.hostname,
+      };
+      if (url.port) backendPattern.port = url.port;
+      remotePatterns.push(backendPattern);
+    }
   } catch {
     // ignore parse errors
   }
@@ -25,13 +29,7 @@ if (apiUrl) {
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      ...(backendPattern ? [backendPattern] : []),
-    ],
+    remotePatterns,
   },
 };
 
