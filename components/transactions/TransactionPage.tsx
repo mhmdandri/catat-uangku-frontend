@@ -3,7 +3,12 @@ import React, { useMemo, useState, useEffect, useCallback } from "react";
 import FilterCard from "@/components/transactions/FilterCard";
 import TransactionTable from "@/components/transactions/TransactionTable";
 import HeaderCards from "./HeaderCard";
-import { Transaction, TransactionType } from "@/lib/types/transaction";
+import {
+  Transaction,
+  TransactionListResponse,
+  TransactionSummary,
+  TransactionType,
+} from "@/lib/types/transaction";
 import AddTransaction from "./AddTransaction";
 import EditTransaction from "./EditTransaction";
 import { useModalStore } from "@/store/useModalStore";
@@ -18,6 +23,7 @@ import axios from "axios";
 
 interface TransactionPageProps {
   data: Transaction[];
+  summary?: TransactionSummary;
 }
 
 type DateRange = {
@@ -25,7 +31,7 @@ type DateRange = {
   end?: string;
 };
 
-export default function TransactionPage({ data }: TransactionPageProps) {
+export default function TransactionPage({ data, summary }: TransactionPageProps) {
   const { isOpen, closeModal, openModal } = useModalStore();
   const { user, isLoading: isUserLoading } = useUser();
   const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
@@ -36,6 +42,9 @@ export default function TransactionPage({ data }: TransactionPageProps) {
     string | null
   >(null);
   const [transactions, setTransactions] = useState<Transaction[]>(data);
+  const [summaryState, setSummaryState] = useState<TransactionSummary | null>(
+    summary ?? null
+  );
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
@@ -45,7 +54,8 @@ export default function TransactionPage({ data }: TransactionPageProps) {
   const [fetchError, setFetchError] = useState<string | null>(null);
   useEffect(() => {
     setTransactions(data);
-  }, [data]);
+    setSummaryState(summary ?? null);
+  }, [data, summary]);
   const buildDateQuery = useCallback((range?: DateRange) => {
     const params = new URLSearchParams();
     if (range?.start) params.set("start_date", range.start);
@@ -56,7 +66,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
   const fetchTransactions = useCallback(
     async (range?: DateRange) => {
       if (isTransactionsRefreshing) return;
-      if (!user?.id) {
+      if (!user?.data.id) {
         if (!isUserLoading) {
           setFetchError("Pengguna tidak ditemukan");
         }
@@ -66,10 +76,11 @@ export default function TransactionPage({ data }: TransactionPageProps) {
       setFetchError(null);
       try {
         const query = buildDateQuery(range ?? dateRange);
-        const res = await get<{ data: Transaction[] }>(
-          `/transactions/user/${user.id}${query}`
+        const res = await get<TransactionListResponse>(
+          `/transactions/user/${user.data.id}${query}`
         );
         setTransactions(res.data ?? []);
+        setSummaryState(res.summary ?? null);
       } catch {
         setFetchError("Gagal memuat transaksi");
       } finally {
@@ -81,7 +92,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
       dateRange,
       isTransactionsRefreshing,
       isUserLoading,
-      user?.id,
+      user?.data.id,
     ]
   );
   const handleRefresh = useCallback(() => {
@@ -145,6 +156,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
         try {
           await del(`/transactions/${id}`);
           setTransactions((prev) => prev.filter((t) => t.id !== id));
+          setSummaryState(null);
           setShowModalDelete(false);
           setSelectedTransactionId(null);
           toastSuccess("Transaksi berhasil dihapus");
@@ -176,17 +188,21 @@ export default function TransactionPage({ data }: TransactionPageProps) {
     [transactions, selectedTransactionId]
   );
 
-  const { totalIncome, totalExpense } = useMemo(() => {
+  const derivedTotals = useMemo(() => {
     return transactions.reduce(
       (acc, t) => {
         const amount = t.total_amount ?? 0;
         if (t.type === "income") acc.totalIncome += amount;
         if (t.type === "expense") acc.totalExpense += Math.abs(amount);
+        acc.totalCount += 1;
         return acc;
       },
-      { totalIncome: 0, totalExpense: 0 }
+      { totalCount: 0, totalIncome: 0, totalExpense: 0 }
     );
   }, [transactions]);
+  const totalCount = summaryState?.totalCount ?? derivedTotals.totalCount;
+  const totalIncome = summaryState?.totalIncome ?? derivedTotals.totalIncome;
+  const totalExpense = summaryState?.totalExpense ?? derivedTotals.totalExpense;
   const { isPageLoading, isListLoading } = usePageLoadState({
     isUserLoading,
     itemsLength: transactions.length,
@@ -231,7 +247,7 @@ export default function TransactionPage({ data }: TransactionPageProps) {
       <main className="flex-1 overflow-y-auto">
         <div className="space-y-6">
           <HeaderCards
-            totalCount={transactions.length}
+            totalCount={totalCount}
             totalIncome={totalIncome}
             totalExpense={totalExpense}
             isLoading={isPageLoading}

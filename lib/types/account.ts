@@ -4,7 +4,7 @@ export type AccountType = "bank" | "e-wallet" | "cash";
 export type Scope = "personal" | "group";
 export type Account = {
   id: string;
-  owner_user_id: string;
+  owner_user_id?: string;
   group_id?: string | null;
   first_balance?: number | null;
   balance?: number | null;
@@ -16,6 +16,10 @@ export type Account = {
   number?: string | null;
   currency?: string | null;
   scope: Scope;
+};
+export type AccountListResponse = {
+  summary: Summary[];
+  data: Account[];
 };
 export type AccountTotals = {
   totalBalance: number;

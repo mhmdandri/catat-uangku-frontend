@@ -35,6 +35,15 @@ export type Transaction = {
   transaction_lines?: TransactionLine[];
   attachments?: Attachment[];
 };
+export type TransactionSummary = {
+  totalCount: number;
+  totalIncome: number;
+  totalExpense: number;
+};
+export type TransactionListResponse = {
+  summary: TransactionSummary;
+  data: Transaction[];
+};
 export type TransactionPayload = {
   group_id?: string | null;
   category_id: string;

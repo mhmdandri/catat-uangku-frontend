@@ -1,10 +1,9 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AccountSummary } from "@/components/accounts/AccountSummary";
 import { AccountCard } from "@/components/accounts/AccountCard";
 import { useToggleStore } from "@/store/useToggleStore";
 import {
-  calculateAccountTotalsByCurrency,
   createAccountPayload,
   createInitialAccountForm,
   shouldFetchTransactions,
@@ -21,7 +20,12 @@ import ModalDelete from "./ModalDelete";
 import SheetEdit from "./SheetEdit";
 import { AccountSummarySkeleton } from "./AccountSkeleton";
 import { EmptyPage } from "../EmptyPage";
-import { Account, EditAccountPayload } from "@/lib/types/account";
+import {
+  Account,
+  AccountListResponse,
+  EditAccountPayload,
+  Summary,
+} from "@/lib/types/account";
 import { Transaction } from "@/lib/types/transaction";
 
 const AccountPage: React.FC = () => {
@@ -31,6 +35,7 @@ const AccountPage: React.FC = () => {
   );
   const { isOpen, closeModal } = useModalStore();
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [summaries, setSummaries] = useState<Summary[]>([]);
   const [isAccountsInitialLoading, setIsAccountsInitialLoading] =
     useState(true);
   const [isAccountMutating, setIsAccountMutating] = useState(false);
@@ -66,8 +71,9 @@ const AccountPage: React.FC = () => {
   });
   useEffect(() => {
     let active = true;
-    if (!user?.id) {
+    if (!user?.data.id) {
       setAccounts([]);
+      setSummaries([]);
       setFetchError(null);
       setIsAccountsInitialLoading(false);
       return;
@@ -76,15 +82,17 @@ const AccountPage: React.FC = () => {
       setIsAccountsInitialLoading(true);
       setFetchError(null);
       try {
-        const response = await get<{ data: Account[] }>(
-          `/accounts/user/${user.id}`
+        const response = await get<AccountListResponse>(
+          `/accounts/user/${user.data.id}`
         );
         if (!active) return;
         setAccounts(response.data ?? []);
+        setSummaries(response.summary ?? []);
       } catch {
         if (!active) return;
         setFetchError("Gagal memuat daftar akun");
         setAccounts([]);
+        setSummaries([]);
       } finally {
         if (active) setIsAccountsInitialLoading(false);
       }
@@ -93,7 +101,7 @@ const AccountPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [user?.id]);
+  }, [user?.data.id]);
   const loadTransactionsForAccount = useCallback(
     async (accountId: string) => {
       if (
@@ -167,7 +175,7 @@ const AccountPage: React.FC = () => {
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (isAccountMutating) return;
-      if (!user?.id) {
+      if (!user?.data.id) {
         toastError("Pengguna tidak ditemukan");
         return;
       }
@@ -177,11 +185,12 @@ const AccountPage: React.FC = () => {
       try {
         const payload = createAccountPayload(formData);
         await post("/accounts", payload);
-        const refreshed = await get<{ data: Account[] }>(
-          `/accounts/user/${user.id}`
+        const refreshed = await get<AccountListResponse>(
+          `/accounts/user/${user.data.id}`
         );
         toastSuccess("Akun berhasil ditambahkan");
         setAccounts(refreshed.data ?? []);
+        setSummaries(refreshed.summary ?? []);
         setFormData(createInitialAccountForm());
         closeModal("account");
       } catch (error) {
@@ -199,7 +208,7 @@ const AccountPage: React.FC = () => {
         setIsAccountMutating(false);
       }
     },
-    [formData, user?.id, closeModal, isAccountMutating]
+    [formData, user?.data.id, closeModal, isAccountMutating]
   );
   const handleConfirmDelete = (accountId: string) => {
     setShowModalDelete(true);
@@ -208,7 +217,7 @@ const AccountPage: React.FC = () => {
   const handleDelete = useCallback(
     async (accountId: string) => {
       if (isAccountMutating) return;
-      if (!user?.id) {
+      if (!user?.data.id) {
         toastError("Pengguna tidak ditemukan");
         return;
       }
@@ -216,11 +225,12 @@ const AccountPage: React.FC = () => {
       setFetchError(null);
       try {
         await del(`/accounts/${accountId}`);
-        const refreshed = await get<{ data: Account[] }>(
-          `/accounts/user/${user.id}`
+        const refreshed = await get<AccountListResponse>(
+          `/accounts/user/${user.data.id}`
         );
         toastSuccess("Akun berhasil dihapus");
         setAccounts(refreshed.data ?? []);
+        setSummaries(refreshed.summary ?? []);
         setSelectedAccDeleteId(null);
         setShowModalDelete(false);
       } catch (error) {
@@ -234,7 +244,7 @@ const AccountPage: React.FC = () => {
         setIsAccountMutating(false);
       }
     },
-    [user?.id, isAccountMutating]
+    [user?.data.id, isAccountMutating]
   );
   const handleShowEdit = (accountId: string) => {
     setShowEditForm(true);
@@ -260,11 +270,12 @@ const AccountPage: React.FC = () => {
         `/accounts/${selectedAccEditId}`,
         formEdit
       );
-      const refreshed = await get<{ data: Account[] }>(
-        `/accounts/user/${user?.id}`
+      const refreshed = await get<AccountListResponse>(
+        `/accounts/user/${user?.data.id}`
       );
       toastSuccess(res.message);
       setAccounts(refreshed.data ?? []);
+      setSummaries(refreshed.summary ?? []);
       setShowEditForm(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -276,10 +287,6 @@ const AccountPage: React.FC = () => {
       setIsAccountMutating(false);
     }
   };
-  const summaries = useMemo(
-    () => calculateAccountTotalsByCurrency(accounts),
-    [accounts]
-  );
   const isPageLoading = isUserLoading || isAccountsInitialLoading;
   const { openModal } = useModalStore();
   return (

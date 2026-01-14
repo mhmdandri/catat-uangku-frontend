@@ -1,21 +1,10 @@
 "use client";
 import { Calendar, Camera, Edit } from "lucide-react";
-import type { User } from "@/lib/types/user";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { AuthMeResponse } from "@/lib/types/auth";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { get } from "@/lib/axios";
-import { differenceInMonths } from "date-fns";
-import { Transaction } from "@/lib/types/transaction";
-import { Account } from "@/lib/types/account";
-import { Skeleton } from "@/components/ui/skeleton";
 type Props = {
-  userData: User;
-  stats: {
-    totalTransactions: number;
-    totalGroups: number;
-    totalAccounts: number;
-    memberSince: string;
-  };
+  userData: AuthMeResponse;
   isEditingProfile: boolean;
   onEdit: () => void;
   onUploadAvatar?: (file: File) => void;
@@ -23,7 +12,6 @@ type Props = {
 };
 const ProfileHeaderCard: React.FC<Props> = ({
   userData,
-  stats,
   isEditingProfile,
   onEdit,
   onUploadAvatar,
@@ -31,41 +19,12 @@ const ProfileHeaderCard: React.FC<Props> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [avatarError, setAvatarError] = useState(false);
-  const [transaction, setTransaction] = useState<Transaction[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [isStatsLoading, setIsStatsLoading] = useState(true);
-  const fetchTrx = useCallback(async () => {
-    setIsStatsLoading(true);
-    try {
-      const resTrx = await get<{ data: Transaction[] }>(
-        `/transactions/user/${userData.id}`
-      );
-      const resAcc = await get<{ data: Account[] }>(
-        `/accounts/user/${userData.id}`
-      );
-      setAccounts(resAcc.data);
-      setTransaction(resTrx.data);
-    } catch {
-      setAccounts([]);
-      setTransaction([]);
-    } finally {
-      setIsStatsLoading(false);
-    }
-  }, [userData.id]);
-  useEffect(() => {
-    console.log(userData);
-    void fetchTrx();
-  }, [fetchTrx, userData]);
-
-  const umurAkun = useMemo(() => {
-    const createdAt = userData?.created_at;
-    if (!createdAt) return "-";
-    const createdDate = new Date(createdAt.replace(" ", "T"));
-    if (Number.isNaN(createdDate.getTime())) return "-";
-    const months = differenceInMonths(new Date(), createdDate);
-    return months;
-  }, [userData?.created_at]);
-  console.log(umurAkun);
+  const displayName = useMemo(() => {
+    const first = userData.userProfile.firstName || userData.data.name;
+    const last = userData.userProfile.lastName;
+    return last ? `${first} ${last}` : first;
+  }, [userData.data.name, userData.userProfile.firstName, userData.userProfile.lastName]);
+  const displayInitial = (displayName.charAt(0) || "?").toUpperCase();
 
   const handlePick = () => {
     if (!onUploadAvatar) return;
@@ -79,7 +38,7 @@ const ProfileHeaderCard: React.FC<Props> = ({
       e.target.value = "";
     }
   };
-  const avatar = userData.profile?.avatar_url;
+  const avatar = userData.userProfile.avatarUrl;
   const resolvedAvatar = useMemo(() => {
     if (!avatar) return null;
     if (avatar.startsWith("http://") || avatar.startsWith("https://")) {
@@ -95,6 +54,7 @@ const ProfileHeaderCard: React.FC<Props> = ({
     }
   }, [avatar]);
   const showAvatar = resolvedAvatar && !avatarError;
+  const durationMember = userData.summary.durationMember;
   return (
     <div className="mb-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div className="h-32 bg-linear-to-br from-emerald-600 to-emerald-700"></div>
@@ -115,7 +75,7 @@ const ProfileHeaderCard: React.FC<Props> = ({
                 />
               ) : (
                 <div className="flex h-24 w-24 sm:h-32 sm:w-32 items-center justify-center rounded-full border-4 border-card bg-emerald-600 text-4xl text-white">
-                  {userData.name.charAt(0)}
+                  {displayInitial}
                 </div>
               )}
               {onUploadAvatar && (
@@ -139,17 +99,13 @@ const ProfileHeaderCard: React.FC<Props> = ({
               )}
             </div>
             <div className="pb-2">
-              <h2 className="text-2xl text-foreground">{userData.name}</h2>
-              <p className="text-sm text-muted-foreground">{userData.email}</p>
+              <h2 className="text-2xl text-foreground">{displayName}</h2>
+              <p className="text-sm text-muted-foreground">
+                {userData.data.email}
+              </p>
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
-                <span>
-                  Bergabung sejak{" "}
-                  {new Date(userData.created_at).toLocaleDateString("id-ID", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
+                <span>Member selama {durationMember} bulan</span>
               </div>
             </div>
           </div>
@@ -167,29 +123,27 @@ const ProfileHeaderCard: React.FC<Props> = ({
         </div>
         <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
-            {isStatsLoading ? (
-              <Skeleton className="mx-auto h-7 w-10" />
-            ) : (
-              <p className="text-2xl text-emerald-600">
-                {transaction.length}
-              </p>
-            )}
+            <p className="text-2xl text-emerald-600">
+              {userData.summary.totalTransaction}
+            </p>
             <p className="text-sm text-muted-foreground">Transaksi</p>
           </div>
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
-            {isStatsLoading ? (
-              <Skeleton className="mx-auto h-7 w-10" />
-            ) : (
-              <p className="text-2xl text-emerald-600">{accounts.length}</p>
-            )}
+            <p className="text-2xl text-emerald-600">
+              {userData.summary.totalAccount}
+            </p>
             <p className="text-sm text-muted-foreground">Rekening</p>
           </div>
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
-            <p className="text-2xl text-emerald-600">{stats.totalGroups}</p>
+            <p className="text-2xl text-emerald-600">
+              {userData.summary.totalGroup}
+            </p>
             <p className="text-sm text-muted-foreground">Grup</p>
           </div>
           <div className="rounded-lg bg-gray-50 dark:bg-white/5 p-3 sm:p-4 text-center">
-            <p className="text-2xl text-emerald-600">{umurAkun} bulan</p>
+            <p className="text-2xl text-emerald-600">
+              {durationMember} bulan
+            </p>
             <p className="text-sm text-muted-foreground">Member</p>
           </div>
         </div>
