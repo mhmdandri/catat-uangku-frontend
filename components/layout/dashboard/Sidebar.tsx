@@ -13,9 +13,9 @@ import {
 import clsx from "clsx";
 import { Skeleton } from "../../ui/skeleton";
 import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
-import { User } from "@/lib/types/user";
+import { AuthMeResponse } from "@/lib/types/auth";
 interface SidebarProps {
-  userData: User | null;
+  userData: AuthMeResponse | null;
   onLogout?: () => void;
   isLoading?: boolean;
   isLoggingOut?: boolean;

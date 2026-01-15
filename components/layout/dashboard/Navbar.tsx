@@ -7,10 +7,10 @@ import { Button } from "../../ui/button";
 import { useToggleStore } from "@/store/useToggleStore";
 import { useModalStore } from "@/store/useModalStore";
 import { ProfileDropdown } from "@/components/profile/ProfileDropdown";
-import { User } from "@/lib/types/user";
+import { AuthMeResponse } from "@/lib/types/auth";
 
 interface NavbarProps {
-  userData: User | null;
+  userData: AuthMeResponse | null;
   isLoading?: boolean;
   onLogout?: () => void;
   isLoggingOut?: boolean;
@@ -79,7 +79,7 @@ const PAGE_CONFIG: Record<string, PageConfig> = {
     actions: [
       {
         id: "add-group",
-        label: "Buat Grup",
+        label: "Buat Grup Baru",
         icon: Plus,
         variant: "primary",
       },
@@ -137,7 +137,7 @@ export function Navbar({
   const showBalances = isActive("balanceVisibility");
   const toggleShowBalances = () => toggle("balanceVisibility");
 
-  const initial = userData?.name ?? "?";
+  const initial = userData?.userProfile.firstName || userData?.data.name || "?";
 
   const pageConfig: PageConfig = PAGE_CONFIG[pathname] ?? {
     title: "Dashboard",

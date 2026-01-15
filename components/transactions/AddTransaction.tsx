@@ -22,7 +22,7 @@ import { useUser } from "../providers/UserProvider";
 import { toastError, toastSuccess } from "@/lib/toast";
 import { TransactionPayload } from "@/lib/types/transaction";
 import { Category } from "@/lib/types/category";
-import { Account, Scope } from "@/lib/types/account";
+import { Account, AccountListResponse, Scope } from "@/lib/types/account";
 import ExpenseForm from "./ExpenseForm";
 import IncomeForm from "./IncomeForm";
 import AddCategoryModal from "../categories/AddCategoryModal";
@@ -106,7 +106,7 @@ const AddTransaction = ({
       setIsAccountsLoading(true);
       return;
     }
-    if (!user?.id) {
+    if (!user?.data.id) {
       setAccounts([]);
       setAccountsError("Pengguna tidak ditemukan");
       setIsAccountsLoading(false);
@@ -115,7 +115,9 @@ const AddTransaction = ({
     setIsAccountsLoading(true);
     setAccountsError(null);
     try {
-      const res = await get<{ data: Account[] }>(`/accounts/user/${user.id}`);
+      const res = await get<AccountListResponse>(
+        `/accounts/user/${user.data.id}`
+      );
       console.log(res.data);
       setAccounts(res.data ?? []);
     } catch (error) {
@@ -127,7 +129,7 @@ const AddTransaction = ({
     } finally {
       setIsAccountsLoading(false);
     }
-  }, [user?.id, isUserLoading]);
+  }, [user?.data.id, isUserLoading]);
 
   useEffect(() => {
     if (!scopedAccounts.length) return;
@@ -317,7 +319,15 @@ const AddTransaction = ({
       onSubmit();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const message = error.response?.data?.message || error.message;
+        const data = error.response?.data as
+          | { error?: string; message?: string }
+          | string
+          | undefined;
+        const message =
+          (typeof data === "object" && data?.error) ||
+          (typeof data === "object" && data?.message) ||
+          (typeof data === "string" ? data : null) ||
+          error.message;
         toastError(message);
       }
     } finally {

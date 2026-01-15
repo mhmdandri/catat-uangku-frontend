@@ -1,12 +1,12 @@
 "use client";
 
+import { AuthMeResponse } from "@/lib/types/auth";
 import { ProfileUpdatePayload } from "@/lib/types/profile";
-import { User } from "@/lib/types/user";
 import { Mail, MapPin, Phone, Save, User2, X } from "lucide-react";
 
 type Props = {
   isEditing: boolean;
-  userData: User;
+  userData: AuthMeResponse;
   profileFormData: ProfileUpdatePayload;
   setProfileFormData: (data: ProfileUpdatePayload) => void;
   onSave: (e: React.FormEvent) => void;
@@ -33,8 +33,8 @@ const ProfileInfoTab: React.FC<Props> = ({
               <div>
                 <p className="text-sm text-muted-foreground">Nama Lengkap</p>
                 <p className="text-foreground">
-                  {userData.profile?.first_name || userData.name}{" "}
-                  {userData.profile?.last_name || ""}
+                  {userData.userProfile.firstName || userData.data.name}{" "}
+                  {userData.userProfile.lastName || ""}
                 </p>
               </div>
             </div>
@@ -42,7 +42,7 @@ const ProfileInfoTab: React.FC<Props> = ({
               <Mail className="mt-1 h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="text-foreground">{userData.email}</p>
+                <p className="text-foreground">{userData.data.email}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -50,7 +50,7 @@ const ProfileInfoTab: React.FC<Props> = ({
               <div>
                 <p className="text-sm text-muted-foreground">No. Telepon</p>
                 <p className="text-foreground">
-                  {userData.profile?.phone || "-"}
+                  {userData.userProfile.phone || "-"}
                 </p>
               </div>
             </div>
@@ -59,14 +59,14 @@ const ProfileInfoTab: React.FC<Props> = ({
               <div>
                 <p className="text-sm text-muted-foreground">Alamat</p>
                 <p className="text-foreground">
-                  {userData.profile?.address || "-"}
+                  {userData.userProfile.address || "-"}
                 </p>
               </div>
             </div>
           </div>
           <div className="border-t border-border pt-6">
             <p className="mb-2 text-sm text-muted-foreground">Bio</p>
-            <p className="text-foreground">{userData.profile?.bio || "-"}</p>
+            <p className="text-foreground">{userData.userProfile.bio || "-"}</p>
           </div>
         </div>
       </div>

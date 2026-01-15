@@ -12,12 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
-import { User } from "@/lib/types/user";
+import { AuthMeResponse } from "@/lib/types/auth";
 import { Spinner } from "@/components/ui/spinner";
 
 type Variant = "full" | "icon";
 interface ProfileDropdownProps {
-  user: User;
+  user: AuthMeResponse;
   onLogout?: () => void;
   align?: "start" | "end";
   variant?: Variant;
@@ -30,8 +30,12 @@ export function ProfileDropdown({
   variant = "full",
   isLoggingOut = false,
 }: ProfileDropdownProps) {
-  const avatarUrl = resolveAvatarUrl(user.profile?.avatar_url);
-  const initial = user.name?.charAt(0)?.toUpperCase() ?? "?";
+  const avatarUrl = resolveAvatarUrl(user.userProfile?.avatarUrl);
+  const nameBase = user.userProfile.firstName || user.data.name;
+  const displayName = user.userProfile.lastName
+    ? `${nameBase} ${user.userProfile.lastName}`
+    : nameBase;
+  const initial = (displayName.charAt(0) || "?").toUpperCase();
   const [imgError, setImgError] = useState(false);
   const isLogoutDisabled = !onLogout || isLoggingOut;
   const Trigger = (
@@ -55,8 +59,10 @@ export function ProfileDropdown({
       )}
       {variant === "full" && (
         <div className="min-w-0 flex-1 text-left">
-          <p className="truncate text-sm text-foreground">{user.name}</p>
-          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          <p className="truncate text-sm text-foreground">{displayName}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {user.data.email}
+          </p>
         </div>
       )}
     </>
@@ -89,9 +95,9 @@ export function ProfileDropdown({
         className="w-52 bg-card text-foreground border border-border"
       >
         <DropdownMenuLabel className="min-w-0">
-          <div className="truncate">{user.name}</div>
+          <div className="truncate">{displayName}</div>
           <div className="truncate text-xs font-normal text-muted-foreground">
-            {user.email}
+            {user.data.email}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

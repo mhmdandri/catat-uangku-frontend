@@ -1,11 +1,11 @@
 "use client";
 import { createContext, useContext } from "react";
-import type { User } from "@/lib/types/user";
+import type { AuthMeResponse } from "@/lib/types/auth";
 
 type UserContextValue = {
-  user: User | null;
+  user: AuthMeResponse | null;
   isLoading: boolean;
-  setUser: (u: User | null) => void;
+  setUser: (u: AuthMeResponse | null) => void;
 };
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);

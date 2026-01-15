@@ -26,7 +26,7 @@ import type {
   TransactionType,
 } from "@/lib/types/transaction";
 import type { Category } from "@/lib/types/category";
-import type { Account } from "@/lib/types/account";
+import type { Account, AccountListResponse } from "@/lib/types/account";
 import ExpenseForm from "./ExpenseForm";
 import IncomeForm from "./IncomeForm";
 import AddCategoryModal from "../categories/AddCategoryModal";
@@ -116,7 +116,7 @@ const EditTransaction = ({
       setIsAccountsLoading(true);
       return;
     }
-    if (!user?.id) {
+    if (!user?.data.id) {
       setAccounts([]);
       setAccountsError("Pengguna tidak ditemukan");
       setIsAccountsLoading(false);
@@ -125,7 +125,9 @@ const EditTransaction = ({
     setIsAccountsLoading(true);
     setAccountsError(null);
     try {
-      const res = await get<{ data: Account[] }>(`/accounts/user/${user.id}`);
+      const res = await get<AccountListResponse>(
+        `/accounts/user/${user.data.id}`
+      );
       setAccounts(res.data ?? []);
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -136,7 +138,7 @@ const EditTransaction = ({
     } finally {
       setIsAccountsLoading(false);
     }
-  }, [user?.id, isUserLoading]);
+  }, [user?.data.id, isUserLoading]);
 
   useEffect(() => {
     if (!open) return;

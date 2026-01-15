@@ -8,12 +8,12 @@ import { useLoadingStore } from "@/store/useLoadingStore";
 import { useRouter } from "next/navigation";
 import { UserProvider } from "@/components/providers/UserProvider";
 import { FloatingButton } from "@/components/layout/dashboard/mobile/FloatingButton";
-import { User } from "@/lib/types/user";
+import { AuthMeResponse } from "@/lib/types/auth";
 
 export function DashboardClient({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoadingStore();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthMeResponse | null>(null);
   const [isUserLoading, setIsUserLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -27,17 +27,8 @@ export function DashboardClient({ children }: { children: ReactNode }) {
     const fetchUserData = async () => {
       setIsUserLoading(true);
       try {
-        const response = await get<{
-          data?: User | { data?: User };
-          user?: User;
-        }>("/auth/me");
-        const resolvedUser = ((response.data && "data" in response.data
-          ? (response.data as { data?: User })?.data
-          : response.data) ??
-          response.user ??
-          (response as unknown as User)) as User;
-
-        if (!cancelled && resolvedUser?.id) setUser(resolvedUser);
+        const response = await get<AuthMeResponse>("/auth/me");
+        if (!cancelled && response?.data?.id) setUser(response);
       } catch (err) {
         console.error("Gagal memuat user saat init dashboard:", err);
         if (!cancelled) redirectToLogin();

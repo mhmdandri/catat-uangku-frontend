@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ProfileHeaderCard from "@/components/profile/ProfileHeaderCard";
 import ProfileTabs from "@/components/profile/ProfileTabs";
 import ProfileInfoTab from "@/components/profile/ProfileInfoTab";
@@ -12,8 +12,8 @@ import { toastError, toastSuccess } from "@/lib/toast";
 import axios from "axios";
 import ProfileSkeleton from "./ProfileSkeleton";
 import { useTheme } from "next-themes";
-import { Preferences, ProfileUpdatePayload } from "@/lib/types/profile";
-import { User } from "@/lib/types/user";
+import { AuthMeResponse } from "@/lib/types/auth";
+import { Preferences, Profile, ProfileUpdatePayload } from "@/lib/types/profile";
 
 export type ActiveTab = "profile" | "security" | "preferences";
 const ProfilePage = () => {
@@ -32,6 +32,17 @@ const ProfilePage = () => {
     address: "",
     bio: "",
   });
+  const mapProfileToUserProfile = (
+    profile: Profile | null | undefined,
+    fallbackName: string
+  ): AuthMeResponse["userProfile"] => ({
+    firstName: profile?.first_name || fallbackName || "",
+    lastName: profile?.last_name ?? "",
+    phone: profile?.phone ?? "",
+    address: profile?.address ?? "",
+    bio: profile?.bio ?? "",
+    avatarUrl: profile?.avatar_url ?? "",
+  });
   useEffect(() => {
     if (!user) {
       setProfileFormData({
@@ -44,12 +55,12 @@ const ProfilePage = () => {
       return;
     }
     setProfileFormData({
-      first_name: user.profile?.first_name || user.name || "",
-      last_name: user.profile?.last_name || "",
-      phone: user.profile?.phone || "",
-      address: user.profile?.address || "",
-      bio: user.profile?.bio || "",
-      birthdate: user.profile?.birthdate || "",
+      first_name: user.userProfile.firstName || user.data.name || "",
+      last_name: user.userProfile.lastName || "",
+      phone: user.userProfile.phone || "",
+      address: user.userProfile.address || "",
+      bio: user.userProfile.bio || "",
+      birthdate: "",
     });
   }, [user]);
 
@@ -69,21 +80,6 @@ const ProfilePage = () => {
     },
   });
 
-  const stats = {
-    totalTransactions: 234,
-    totalGroups: 4,
-    totalAccounts: 5,
-    memberSince: "3 bulan",
-  };
-
-  const fullProfile = useMemo<User | null>(() => {
-    if (!user) return null;
-    return {
-      ...user,
-      profile: user.profile || undefined,
-    };
-  }, [user]);
-
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profileFormData) return;
@@ -101,12 +97,18 @@ const ProfilePage = () => {
           payload.birthdate = parsed.toISOString();
         }
       }
-      const updatedProfile = await put<{ data: User["profile"] }>(
+      const updatedProfile = await put<{ data: Profile }>(
         "/profile",
         payload
       );
       if (user) {
-        setUser({ ...user, profile: updatedProfile.data });
+        setUser({
+          ...user,
+          userProfile: mapProfileToUserProfile(
+            updatedProfile.data,
+            user.data.name
+          ),
+        });
       }
       setIsEditingProfile(false);
       toastSuccess("Profil berhasil diperbarui");
@@ -123,12 +125,12 @@ const ProfilePage = () => {
   const handleCancelEdit = () => {
     if (user) {
       setProfileFormData({
-        first_name: user.profile?.first_name || user.name || "",
-        last_name: user.profile?.last_name || "",
-        phone: user.profile?.phone || "",
-        address: user.profile?.address || "",
-        bio: user.profile?.bio || "",
-        birthdate: user.profile?.birthdate || "",
+        first_name: user.userProfile.firstName || user.data.name || "",
+        last_name: user.userProfile.lastName || "",
+        phone: user.userProfile.phone || "",
+        address: user.userProfile.address || "",
+        bio: user.userProfile.bio || "",
+        birthdate: "",
       });
     }
     setIsEditingProfile(false);
@@ -140,7 +142,7 @@ const ProfilePage = () => {
     try {
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await api.post<{ data: User["profile"] }>(
+      const res = await api.post<{ data: Profile }>(
         "/profile/avatar",
         formData,
         {
@@ -148,18 +150,30 @@ const ProfilePage = () => {
         }
       );
       if (user) {
-        setUser({ ...user, profile: res.data.data });
+        setUser({
+          ...user,
+          userProfile: mapProfileToUserProfile(res.data.data, user.data.name),
+        });
       }
       toastSuccess("Avatar berhasil diunggah");
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const message = error.response.data.message;
+      if (axios.isAxiosError(error)) {
+        const data = error.response?.data as
+          | { error?: string; message?: string }
+          | string
+          | undefined;
+        const message =
+          (typeof data === "object" && data?.error) ||
+          (typeof data === "object" && data?.message) ||
+          (typeof data === "string" ? data : null);
         if (message) {
           setErrorMsg(message);
           toastError(message);
           return;
         }
       }
+      setErrorMsg("Gagal mengunggah avatar. Coba lagi nanti.");
+      toastError("Gagal mengunggah avatar. Coba lagi nanti.");
     } finally {
       setUploadingAvatar(false);
     }
@@ -194,11 +208,10 @@ const ProfilePage = () => {
   return (
     <>
       {isPageLoading && <ProfileSkeleton />}
-      {!isPageLoading && fullProfile && (
+      {!isPageLoading && user && (
         <>
           <ProfileHeaderCard
-            userData={fullProfile}
-            stats={stats}
+            userData={user}
             isEditingProfile={isEditingProfile}
             onEdit={() => setIsEditingProfile(true)}
             onUploadAvatar={handleUploadAvatar}
@@ -211,7 +224,7 @@ const ProfilePage = () => {
           {activeTab === "profile" && (
             <ProfileInfoTab
               isEditing={isEditingProfile}
-              userData={fullProfile}
+              userData={user}
               profileFormData={profileFormData}
               setProfileFormData={setProfileFormData}
               onSave={handleSaveProfile}
